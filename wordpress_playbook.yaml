@@ -1,0 +1,252 @@
+---
+# Install WordPress dependencies
+- hosts: all
+  remote_user: centos
+  become: yes
+  vars: 
+    swap_file_path: "/swapfile"
+    
+  tasks:
+
+# Add a swap file so Yum / MariaDB can run on a low RAM machine.
+    - name: Create swap file
+      command: dd if=/dev/zero of={{ swap_file_path }} bs=1024 count=4M
+               creates="{{ swap_file_path }}"
+      tags:
+        - swap.file.create
+
+    - name: Set swap file permissions
+      file: path="{{ swap_file_path }}"
+            owner=root
+            group=root
+            mode=0600
+      tags:
+        - swap.file.permissions
+
+    - name: Check if swap space exists
+      command: file {{ swap_file_path }}
+      register: swapfile
+      tags:
+        - swap.file.mkswap
+
+    - name: Make swap space if needed
+      command: "mkswap {{ swap_file_path }}"
+      when: swapfile.stdout.find('swap file') == -1
+      tags:
+        - swap.file.mkswap
+
+    - name: Write swap entry in fstab
+      mount: name=none
+             src={{ swap_file_path }}
+             fstype=swap
+             opts=sw
+             passno=0
+             dump=0
+             state=present
+      tags:
+        - swap.fstab
+
+    - name: If there is no swap space, turn it on
+      command: "swapon {{ swap_file_path }}"
+      when: ansible_swaptotal_mb < 1
+      tags:
+        - swap.file.swapon
+
+
+    - name: Upgrade all packages
+      yum:
+       name: '*'
+       state: latest
+
+    - name: Install httpd packages
+      yum:
+       name: 
+        - httpd
+        - mod_ssl
+       state: latest
+
+# edit conf.file
+# add
+# DocumentRoot "/var/www/html/wordpress"
+# redirect to https
+
+# edit ssl.conf:
+# ServerName scrambled.xyz:443
+# DocumentRoot "/var/www/html/wordpress"
+# SSLProtocol all -SSLv2 -SSLv3 -TLS??
+# SSLCipherSuite HIGH ...
+# SSLCertificateFile
+# SSLCertificateKeyFile
+# SSLCertificateChainFile
+
+    - name: Enable and start httpd service
+      service:
+       name: httpd
+       enabled: yes
+       state: started
+
+    - name: Install epel-release package
+      yum:
+       name: epel-release
+       state: latest
+
+    - name: Install utility packages
+      yum:
+       name:
+        - nano
+        - mc
+        - wget
+        - net-tools
+        - unzip
+        - fail2ban
+        - yum-cron
+        - yum-utils
+        - aide
+        - haveged
+       state: latest
+
+    - name: Enable and start the haveged service for better entropy
+      service:
+       name: haveged
+       enabled: yes
+       state: started
+       
+    - name: Enable MariaDB repository
+      yum_repository:
+        name: MariaDB
+        description: MariaDB repository for CentOS 7
+        baseurl: https://yum.mariadb.org/10.3/centos7-amd64
+        enabled: yes
+        gpgkey: https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+        gpgcheck: yes
+        
+    - name: Install MariaDB / MySQL database packages
+      yum:
+       name:
+        - MariaDB-server
+        - MariaDB-client
+        - MySQL-python
+       state: latest
+
+    - name: Enable and start MariaDB service
+      service:
+       name: mariadb
+       enabled: yes
+       state: started
+    
+    - name: Install Remi's PHP repository package
+      yum:
+       name: https://rpms.remirepo.net/enterprise/remi-release-7.rpm
+       state: latest
+       
+    - name: Enable Remi's PHP repository
+      yum_repository:
+        name: remi-php73
+        description: Remi's PHP 7.3 RPM repository for CentOS $releasever
+        mirrorlist: https://rpms.remirepo.net/enterprise/7.4/php73/mirror
+        enabled: yes
+        gpgcheck: yes
+        gpgkey: https://rpms.remirepo.net/RPM-GPG-KEY-remi
+
+# https://make.wordpress.org/hosting/handbook/handbook/server-environment/#php-extensions
+    - name: Install PHP packages
+      yum:
+        name:
+          - php
+          - php-mysql
+          - php-bcmath
+          - php-imagick
+          - php-xml
+          - php-xmlrpc
+          - php-json
+          - php-mbstring
+          - php-ssh2
+          - php-posix
+        state: latest
+
+    - name: Reload the httpd service to enable PHP
+      service:
+       name: httpd
+       enabled: yes
+       state: reloaded
+
+#    - name: Set the MySql root user's password
+#      command: mysqladmin -u root password ""
+
+# needs to include the db user password for future runs
+# mysql -u root
+# mysql> CREATE DATABASE wordpress;
+    - name: Create a database for WordPress
+      mysql_db:
+        name: wordpress
+        state: present
+
+# needs to include the db user password for future runs
+# mysql> CREATE USER 'wordpress'@'localhost' IDENTIFIED BY 'password';
+#    - name: Create user for WordPress to login to database
+#      mysql_user:
+#        name: wordpress
+#        state: present
+#        priv: wordpress.*:ALL
+#        password: 
+
+# mysql> GRANT ALL PRIVILEGES ON wordpress.* TO 'wordpress'@'localhost';
+# mysql> FLUSH PRIVILEGES;
+
+#   Do the equivalent of run mysql_secure_installation 
+
+#    - name: Download the WordPress installation archive
+#      get_url: 
+#        url: https://wordpress.org/latest.tar.gz
+#        dest: ~/
+        
+    - name: Download and extract the WordPress installation archive
+      unarchive:
+        src: https://wordpress.org/latest.tar.gz
+        dest: /var/www/html
+        remote_src: yes
+        creates: /var/www/html/wordpress
+
+
+    # change the file owner and permissions for the WordPress files
+    - name: Give "apache" permissions to the WordPress folder
+      file:
+        path: /var/www/html
+        owner: apache
+        group: apache
+        mode: 0755
+        recurse: yes
+
+# Tell SElinux to allow writes for WP install
+# sudo chcon -t httpd_sys_rw_content_t /var/www/html/wordpress -R
+# Undo allow writes:
+# sudo restorecon -v /var/www/html/wordpress/
+# need to allow writes to wordpress/uploads/
+# sudo chcon -t httpd_sys_rw_content_t /var/www/html/wordpress/uploads -R
+
+#   Show a note to go to http://<ip>/wp-admin/install.php
+
+    - name: Enable and start the firewall service
+      service:
+       name: firewalld
+       enabled: yes
+       state: started
+       
+    - name: Allow HTTP through the local firewall
+      firewalld:
+        service: http
+        permanent: yes
+        immediate: yes
+        state: enabled
+
+    - name: Allow HTTPS through the local firewall
+      firewalld:
+        service: https
+        permanent: yes
+        immediate: yes
+        state: enabled
+
+# restore mysql database?
+
+...
+
