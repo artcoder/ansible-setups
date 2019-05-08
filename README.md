@@ -1,2 +1,2 @@
 # ansible-setups
-Ansible playbooks
+Ansible playbooks to setup machines.
