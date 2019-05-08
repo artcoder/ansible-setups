@@ -1,5 +1,7 @@
 ---
 # Install WordPress dependencies
+# Needs passwords from a vault, so run with something like:
+# ansible-playbook my_filename.yaml --ask-vault-pass
 
 - hosts: all
   remote_user: centos
@@ -7,10 +9,11 @@
   vars: 
     swap_file_path: "/swapfile"
   
+  # Store passwords in the file secret.yml:
+  # wordpress_database_user_password: 
+  vars_files: secret.yml
+  
   tasks:
-    - name: Include encrypted passwords
-      include_vars:
-        file: secret.yml
 
 # Add a swap file so Yum / MariaDB can run on a low RAM machine.
     - name: Create swap file
