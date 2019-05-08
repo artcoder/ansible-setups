@@ -1,12 +1,16 @@
 ---
 # Install WordPress dependencies
+
 - hosts: all
   remote_user: centos
   become: yes
   vars: 
     swap_file_path: "/swapfile"
-    
+  
   tasks:
+    - name: Include encrypted passwords
+      include_vars:
+        file: secret.yml
 
 # Add a swap file so Yum / MariaDB can run on a low RAM machine.
     - name: Create swap file
@@ -181,17 +185,17 @@
         name: wordpress
         state: present
 
-# needs to include the db user password for future runs
 # mysql> CREATE USER 'wordpress'@'localhost' IDENTIFIED BY 'password';
-#    - name: Create user for WordPress to login to database
-#      mysql_user:
-#        name: wordpress
-#        state: present
-#        priv: wordpress.*:ALL
-#        password: 
-
 # mysql> GRANT ALL PRIVILEGES ON wordpress.* TO 'wordpress'@'localhost';
 # mysql> FLUSH PRIVILEGES;
+
+    - name: Create user for WordPress to login to database
+      mysql_user:
+        name: wordpress
+        state: present
+        priv: wordpress.*:ALL
+        password: "{{ wordpress_database_user_password }}"
+
 
 #   Do the equivalent of run mysql_secure_installation 
 
