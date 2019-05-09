@@ -1,7 +1,10 @@
 ---
-# Install WordPress dependencies
-# Needs passwords from a vault, so run with something like:
-# ansible-playbook my_filename.yaml --ask-vault-pass
+# Install WordPress on CentOS 7 cloud server
+#
+# Needs passwords from a vault, so make the vault with:
+#   ansible-vault create secret.yml
+# Run with something like:
+#   ansible-playbook wordpress_playbook.yaml --ask-vault-pass
 
 - hosts: all
   remote_user: centos
@@ -10,12 +13,13 @@
     swap_file_path: "/swapfile"
   
   # Store passwords in the file secret.yml:
-  # wordpress_database_user_password: 
-  vars_files: secret.yml
+  # wordpress_database_user_password: password-here
+  vars_files:
+    - "secret.yml"
   
   tasks:
 
-# Add a swap file so Yum / MariaDB can run on a low RAM machine.
+    # Add a swap file so Yum / MariaDB can run on a low RAM machine.
     - name: Create swap file
       command: dd if=/dev/zero of={{ swap_file_path }} bs=1024 count=4M
                creates="{{ swap_file_path }}"
@@ -179,8 +183,8 @@
 
 #    - name: Set the MySql root user's password
 #      command: mysqladmin -u root password ""
-
 # needs to include the db user password for future runs
+
 # mysql -u root
 # mysql> CREATE DATABASE wordpress;
     - name: Create a database for WordPress
@@ -207,12 +211,24 @@
 #        url: https://wordpress.org/latest.tar.gz
 #        dest: ~/
         
+#    - name: Download and extract the WordPress installation archive
+#      unarchive:
+#        src: https://wordpress.org/latest.tar.gz
+#        dest: /var/www/html
+#        remote_src: yes
+#        creates: /var/www/html/wordpress
+        
     - name: Download and extract the WordPress installation archive
       unarchive:
         src: https://wordpress.org/latest.tar.gz
-        dest: /var/www/html
+        dest: ~/
         remote_src: yes
-        creates: /var/www/html/wordpress
+        creates: ~/wordpress
+        
+    - name: Copy WordPress files to the web site root folder
+      command: cp -r ~/wordpress/. /var/www/html
+      args:
+        creates: /var/www/html/wp-settings.php
 
 
     # change the file owner and permissions for the WordPress files
@@ -225,11 +241,11 @@
         recurse: yes
 
 # Tell SElinux to allow writes for WP install
-# sudo chcon -t httpd_sys_rw_content_t /var/www/html/wordpress -R
+# sudo chcon -t httpd_sys_rw_content_t /var/www/html -R
 # Undo allow writes:
-# sudo restorecon -v /var/www/html/wordpress/
+# sudo restorecon -v /var/www/html/
 # need to allow writes to wordpress/uploads/
-# sudo chcon -t httpd_sys_rw_content_t /var/www/html/wordpress/uploads -R
+# sudo chcon -t httpd_sys_rw_content_t /var/www/html/uploads -R
 
 #   Show a note to go to http://<ip>/wp-admin/install.php
 
