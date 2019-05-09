@@ -1,8 +1,9 @@
 ---
-# Install WordPress on CentOS 7 cloud server
+# To install WordPress on CentOS 7 cloud server
 #
 # Needs passwords from a vault, so make the vault with:
 #   ansible-vault create secret.yml
+# Encrypt the SSL files with ansible-vault using the same password.
 # Run with something like:
 #   ansible-playbook wordpress_playbook.yaml --ask-vault-pass
 
@@ -11,6 +12,7 @@
   become: yes
   vars: 
     swap_file_path: "/swapfile"
+    ssl_certificate_filename_heading: "scrambled_xyz"
   
   # Store passwords in the file secret.yml:
   # wordpress_database_user_password: password-here
@@ -75,6 +77,33 @@
         - httpd
         - mod_ssl
        state: latest
+
+    - name: Copy domain certificate file
+      copy:
+        src: "./{{ ssl_certificate_filename_heading }}.crt"
+        dest: "/etc/pki/tls/certs/"
+        backup: yes
+        group: root
+        owner: root
+        mode: u+rw,g=,o=
+
+    - name: Copy certificate authority bundle file
+      copy:
+        src: "./{{ ssl_certificate_filename_heading }}.ca-bundle"
+        dest: "/etc/pki/tls/certs/"
+        backup: yes
+        group: root
+        owner: root
+        mode: u+rw,g=,o=
+        
+    - name: Copy private key file
+      copy:
+        src: "./{{ ssl_certificate_filename_heading }}.key"
+        dest: "/etc/pki/tls/private/"
+        backup: yes
+        group: root
+        owner: root
+        mode: u+rw,g=,o=
 
 # edit conf.file
 # add
@@ -159,7 +188,7 @@
         gpgcheck: yes
         gpgkey: https://rpms.remirepo.net/RPM-GPG-KEY-remi
 
-# https://make.wordpress.org/hosting/handbook/handbook/server-environment/#php-extensions
+    # https://make.wordpress.org/hosting/handbook/handbook/server-environment/#php-extensions
     - name: Install PHP packages
       yum:
         name:
@@ -185,18 +214,18 @@
 #      command: mysqladmin -u root password ""
 # needs to include the db user password for future runs
 
-# mysql -u root
-# mysql> CREATE DATABASE wordpress;
+    # mysql -u root
+    # mysql> CREATE DATABASE wordpress;
     - name: Create a database for WordPress
       mysql_db:
         name: wordpress
         state: present
 
-# mysql> CREATE USER 'wordpress'@'localhost' IDENTIFIED BY 'password';
-# mysql> GRANT ALL PRIVILEGES ON wordpress.* TO 'wordpress'@'localhost';
-# mysql> FLUSH PRIVILEGES;
+    # mysql> CREATE USER 'wordpress'@'localhost' IDENTIFIED BY 'password';
+    # mysql> GRANT ALL PRIVILEGES ON wordpress.* TO 'wordpress'@'localhost';
+    # mysql> FLUSH PRIVILEGES;
 
-    - name: Create user for WordPress to login to database
+    - name: Create user and set password for WordPress to login to database
       mysql_user:
         name: wordpress
         state: present
