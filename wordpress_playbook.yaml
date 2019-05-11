@@ -107,11 +107,15 @@
         owner: root
         mode: u+rw,g=,o=
 
-# edit conf.file
-# add
-# redirect to https
-# Redirect / https://secure.example.com/
-# Redirect permanent / https://secure.example.com/
+
+    # Redirect permanent / https://secure.example.com/
+
+    - name: Redirect HTTP to HTTPS
+      lineinfile:
+        path: /etc/httpd/conf/httpd.conf
+        insertafter:
+        line:  "<VirtualHost *:80>\nRedirect / https://{{ website_domain_name }}/\n</VirtualHost>"
+        backup: yes
 
     - name: Set the web site's domain name
       lineinfile:
