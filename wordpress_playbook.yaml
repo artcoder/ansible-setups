@@ -107,15 +107,11 @@
         owner: root
         mode: u+rw,g=,o=
 
-
-    # Redirect permanent / https://secure.example.com/
-
-    - name: Redirect HTTP to HTTPS
-      lineinfile:
-        path: /etc/httpd/conf/httpd.conf
-        insertafter:
-        line:  "<VirtualHost *:80>\nRedirect / https://{{ website_domain_name }}/\n</VirtualHost>"
-        backup: yes
+# edit conf.file
+# add
+# redirect to https
+# Redirect / https://secure.example.com/
+# Redirect permanent / https://secure.example.com/
 
     - name: Set the web site's domain name
       lineinfile:
@@ -312,7 +308,8 @@
         group: apache
         mode: 0755
         recurse: yes
-
+      tags: apache-permissions
+        
     # Tell SElinux to allow writes for WP install
     # semanage fcontext -a -t httpd_sys_rw_content_t "/var/www/html(/.*)?" 
     # sudo restorecon -R -v /var/www/html/
@@ -322,10 +319,11 @@
         target: '/var/www/html(/.*)?'
         setype: httpd_sys_rw_content_t
         state: present
+      tags: apache-permissions
 
     - name: Apply SELinux file context
       command: restorecon -i -R /var/www/html
-  
+      tags: apache-permissions
 
     - name: Enable and start the firewall service
       service:
