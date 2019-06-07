@@ -345,7 +345,13 @@
         immediate: yes
         state: enabled
 
-# restore mysql database?
+    - name: Add a cron job to reboot daily if needed for patches
+      copy:
+        src: './reboot-for-updates.cron'
+        dest: '/etc/cron.daily/reboot-for-updates.cron'
+        backup: yes
+        group: root
+        owner: root
+        mode: u+rwx,g=rx,o=rx
 
 ...
-
