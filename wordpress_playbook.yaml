@@ -1,14 +1,17 @@
 ---
-# To install WordPress on CentOS 7 cloud server
+# To install WordPress on a CentOS 7 cloud server
 #
-# Needs passwords from a vault, so make the vault with:
+# Applies to Ansible hosts in the wordpress group, so
+# edit /etc/ansible/hosts to add a wordpress group and put your servers in it.
+#
+# Reads passwords from a vault, so make the vault with:
 #   ansible-vault create secret.yml
 # Encrypt the SSL files with ansible-vault using the same password:
 #   ansible-vault encrypt site.key site.crt site.ca-bundle
 # Run with something like:
 #   ansible-playbook wordpress_playbook.yaml --ask-vault-pass
 
-- hosts: all
+- hosts: wordpress
   remote_user: centos
   become: yes
   vars: 
@@ -131,7 +134,7 @@
       lineinfile:
         path: /etc/httpd/conf.d/ssl.conf
         regexp: '^SSLCipherSuite .*$'
-        line:  'SSLCipherSuite HIGH:!MD5:!MEDIUM:!LOW'
+        line:  'SSLCipherSuite ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256'
         backup: yes
         
     - name: Disable SSL Compression
@@ -196,6 +199,7 @@
         - yum-utils
         - aide
         - haveged
+        - chrony
        state: latest
 
     - name: Enable and start the haveged service for better entropy
@@ -344,6 +348,33 @@
         permanent: yes
         immediate: yes
         state: enabled
+
+    - name: Allow Network Time Protocol through the local firewall
+      firewalld:
+        service: ntp
+        permanent: yes
+        immediate: yes
+        state: enabled
+
+    - name: Enable and start chronyd service
+      service:
+        name: chronyd
+        enabled: yes
+        state: started
+
+    - name: Set yum-cron to download patches daily
+      lineinfile:
+        path: /etc/yum/yum-cron.conf
+        regexp: '^download_updates = .*$'
+        line: 'download_updates = yes'
+        backup: yes
+        
+    - name: Set yum-cron to install patches daily
+      lineinfile:
+        path: /etc/yum/yum-cron.conf
+        regexp: '^apply_updates = .*$'
+        line: 'apply_updates = yes'
+        backup: yes
 
     - name: Add a cron job to reboot daily if needed for patches
       copy:
