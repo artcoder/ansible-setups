@@ -30,28 +30,20 @@
     - name: Create swap file
       command: dd if=/dev/zero of={{ swap_file_path }} bs=1024 count=4M
                creates="{{ swap_file_path }}"
-      tags:
-        - swap.file.create
 
     - name: Set swap file permissions
       file: path="{{ swap_file_path }}"
             owner=root
             group=root
             mode=0600
-      tags:
-        - swap.file.permissions
 
     - name: Check if swap space exists
       command: file {{ swap_file_path }}
       register: swapfile
-      tags:
-        - swap.file.mkswap
 
-    - name: Make swap space if needed
+    - name: Make swap space if it doesn't exist
       command: "mkswap {{ swap_file_path }}"
       when: swapfile.stdout.find('swap file') == -1
-      tags:
-        - swap.file.mkswap
 
     - name: Write swap entry in fstab
       mount: name=none
@@ -61,14 +53,10 @@
              passno=0
              dump=0
              state=present
-      tags:
-        - swap.fstab
 
     - name: If there is no swap space, turn it on
       command: "swapon {{ swap_file_path }}"
       when: ansible_swaptotal_mb < 1
-      tags:
-        - swap.file.swapon
 
 
     - name: Upgrade all packages
@@ -82,6 +70,7 @@
         - httpd
         - mod_ssl
        state: latest
+
 
     - name: Copy domain certificate file
       copy:
@@ -110,9 +99,7 @@
         owner: root
         mode: u+rw,g=,o=
 
-# edit conf.file
-# add
-# redirect to https
+# need to redirect to https
 # Redirect / https://secure.example.com/
 # Redirect permanent / https://secure.example.com/
 
@@ -151,26 +138,27 @@
         line:  'SSLSessionTickets off'
         backup: yes
     
-    - name: Install the SSL certificate
+    - name: Install the SSL certificate in httpd
       lineinfile:
         path: /etc/httpd/conf.d/ssl.conf
         regexp: '^#?\s*SSLCertificateFile .*$'
         line:  'SSLCertificateFile /etc/pki/tls/certs/{{ ssl_filename_heading }}.crt'
         backup: yes
         
-    - name: Install the SSL certificate authority certificate chain
+    - name: Install the SSL certificate authority certificate chain in httpd
       lineinfile:
         path: /etc/httpd/conf.d/ssl.conf
         regexp: '^#?\s*SSLCACertificateFile .*$'
         line:  'SSLCACertificateFile /etc/pki/tls/certs/{{ ssl_filename_heading }}.ca-bundle'
         backup: yes
         
-    - name: Install the SSL certificate private key
+    - name: Install the SSL certificate private key in httpd
       lineinfile:
         path: /etc/httpd/conf.d/ssl.conf
         regexp: '^SSLCertificateKeyFile .*$'
         line:  'SSLCertificateKeyFile /etc/pki/tls/private/{{ ssl_filename_heading }}.key'
         backup: yes
+
 
     - name: Set the hostname
       command: hostnamectl set-hostname {{ website_domain_name }}
@@ -208,7 +196,7 @@
        enabled: yes
        state: started
        
-    - name: Enable MariaDB repository
+    - name: Enable the MariaDB repository
       yum_repository:
         name: MariaDB
         description: MariaDB repository for CentOS 7
@@ -225,7 +213,7 @@
         - MySQL-python
        state: latest
 
-    - name: Enable and start MariaDB service
+    - name: Enable and start the MariaDB service
       service:
        name: mariadb
        enabled: yes
@@ -281,7 +269,7 @@
     # mysql> GRANT ALL PRIVILEGES ON wordpress.* TO 'wordpress'@'localhost';
     # mysql> FLUSH PRIVILEGES;
 
-    - name: Create user and set password for WordPress to login to database with
+    - name: Create a user and set the password for WordPress to login its database
       mysql_user:
         name: wordpress
         state: present
@@ -304,8 +292,7 @@
         creates: /var/www/html/wp-settings.php
 
 
-    # change the file owner and permissions for the WordPress files
-    - name: Give "apache" permissions to the WordPress folder
+    - name: Give the apache user permissions to the WordPress folder
       file:
         path: /var/www/html
         owner: apache
@@ -325,7 +312,7 @@
         state: present
       tags: apache-permissions
 
-    - name: Apply SELinux file context
+    - name: Apply the SELinux file context
       command: restorecon -i -R /var/www/html
       tags: apache-permissions
 
@@ -356,7 +343,7 @@
         immediate: yes
         state: enabled
 
-    - name: Enable and start chronyd service
+    - name: Enable and start the chronyd service
       service:
         name: chronyd
         enabled: yes
