@@ -1,0 +1,14 @@
+#!/bin/bash
+
+umask 077
+
+tar  -cpzf /var/spool/backup/backup-$(hostname -s)-etc-$(date +"%Y-%m-%d_%H%M%S").tgz /etc
+tar  -cpzf /var/spool/backup/backup-$(hostname -s)-home-$(date +"%Y-%m-%d_%H%M%S").tgz /home
+tar  -cpzf /var/spool/backup/backup-$(hostname -s)-logs-$(date +"%Y-%m-%d_%H%M%S").tgz /var/log
+# tar  -cpzf /var/spool/backup/backup-$(hostname -s)-wwws-$(date +"%Y-%m-%d_%H%M%S").tgz /var/www
+# backup database
+# tar database backup
+
+# Find files that are a few months old,
+#  and that are named like backup-$(hostname -s)*.tgz
+# Delete those files
