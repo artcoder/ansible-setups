@@ -22,8 +22,8 @@
   become: yes
   vars: 
     swap_file_path: '/swapfile'
-    ssl_filename_heading: 'example_com'
-    website_domain_name: 'example.com'
+    ssl_filename_heading: 'scrambled_xyz'
+    website_domain_name: ' scrambled.xyz'
   # email_to: 'user@example.com'
 
   # Store passwords in the file secret.yml:
@@ -399,14 +399,14 @@
     - name: Set the minimum password length
       lineinfile:
         path: /etc/security/pwquality.conf
-        regex: '^minlen = .*$'
+        regexp: '^minlen = .*$'
         line: 'minlen = 12'
         backup: yes
 
     - name: Set the minimum character classes in password
       lineinfile:
         path: /etc/security/pwquality.conf
-        regex: '^minclass = .*$'
+        regexp: '^minclass = .*$'
         line: 'minclass = 3'
         backup: yes
 
