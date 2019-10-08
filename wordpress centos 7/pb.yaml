@@ -4,14 +4,19 @@
 # Applies to Ansible hosts in the wordpress group, so
 # edit /etc/ansible/hosts to add a wordpress group and put your servers in it.
 #
-# Reads passwords from a vault, so make the vault with:
+# Set up SSH login to the remote server before running this playbook.
+#  This assumes SSH key login.
+#
+# Reads passwords and SSL files from a vault, so make the vault with:
 #   ansible-vault create secret.yml
-# Encrypt the SSL files with ansible-vault using the same password:
+# Add the SSL files to the vault using the same password:
 #   ansible-vault encrypt site.key site.crt site.ca-bundle
-# It needs reboot-for-updates.cron, and aide-email.cron in the same folder
-#   as this playbook.
+#
+# It needs aide-email.cron, make-backups.cron, and reboot-for-updates.cron
+#   in the same folder as this playbook.
+
 # Run with something like:
-#   ansible-playbook wordpress_playbook.yaml --ask-vault-pass
+#   ansible-playbook pb.yaml --ask-vault-pass
 
 
 ########################
