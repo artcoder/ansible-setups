@@ -1,12 +1,16 @@
 #!/bin/bash
 
-tar  -cpzf /tmp/backup-$(hostname -s)-etc-$(date +"%Y-%m-%d_%H%M%S").tgz /etc
-tar  -cpzf /tmp/backup-$(hostname -s)-home-$(date +"%Y-%m-%d_%H%M%S").tgz /home
-tar  -cpzf /tmp/backup-$(hostname -s)-logs-$(date +"%Y-%m-%d_%H%M%S").tgz /var/log
-tar  -cpzf /tmp/backup-$(hostname -s)-www-$(date +"%Y-%m-%d_%H%M%S").tgz /var/www
+umask 077
 
-mysqldump wordpress > /tmp/backup-$(hostname -s)-wordpress$(date +"%Y-%m-%d_%H%M%S").sql
+tar  -cpzf /var/spool/backup/backup-$(hostname -s)-etc-$(date +"%Y-%m-%d_%H%M%S").tgz /etc
+tar  -cpzf /var/spool/backup/backup-$(hostname -s)-home-$(date +"%Y-%m-%d_%H%M%S").tgz /home
+tar  -cpzf /var/spool/backup/backup-$(hostname -s)-logs-$(date +"%Y-%m-%d_%H%M%S").tgz /var/log
+tar  -cpzf /var/spool/backup/backup-$(hostname -s)-www-$(date +"%Y-%m-%d_%H%M%S").tgz /var/www
 
-# check for files that are a few months old,
-#  and that are named like /tmp/backup-$(hostname -s)*.tgz
-# delete those files
+mysqldump wordpress > /var/spool/backup/backup-$(hostname -s)-wordpress$(date +"%Y-%m-%d_%H%M%S").sql
+
+# tar database backup file
+
+# Find files that are a few months old,
+#  and that are named like /var/spool/backup/backup-$(hostname -s)*.tgz
+# Delete those files
