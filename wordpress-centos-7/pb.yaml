@@ -429,13 +429,13 @@
         owner: root
         mode: u+rwx,g=,o=
 
-    #- name: Add a cron job to make backups
-    #  copy:
-    #    src: './make-backups.cron'
-    #    dest: /etc/cron.weekly/make-backups.cron'
-    #    backup: yes
-    #    group: root
-    #    owner: root
-    #    mode: u+rwx,g=rx,o=rx
+    - name: Add a cron job to make backups and delete old ones
+      copy:
+        src: './make-backups.cron'
+        dest: /etc/cron.weekly/make-backups.cron'
+        backup: yes
+        group: root
+        owner: root
+        mode: u+rwx,g=rx,o=rx
 
 ...
