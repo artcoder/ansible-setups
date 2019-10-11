@@ -2,6 +2,8 @@
 
 umask 077
 
+# Need to create /var/spool/backup if it doesn't exist
+
 tar  -cpzf /var/spool/backup/backup-$(hostname -s)-etc-$(date +"%Y-%m-%d_%H%M%S").tgz /etc
 tar  -cpzf /var/spool/backup/backup-$(hostname -s)-home-$(date +"%Y-%m-%d_%H%M%S").tgz /home
 tar  -cpzf /var/spool/backup/backup-$(hostname -s)-logs-$(date +"%Y-%m-%d_%H%M%S").tgz /var/log
