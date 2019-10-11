@@ -4,8 +4,8 @@
 # Applies to Ansible hosts in the wordpress group, so
 # edit /etc/ansible/hosts to add a wordpress group and put your servers in it.
 #
+# This assumes SSH key login, so
 # Set up SSH login to the remote server before running this playbook.
-#  This assumes SSH key login.
 #
 # Reads passwords and SSL files from a vault, so make the vault with:
 #   ansible-vault create secret.yml
@@ -432,7 +432,7 @@
     - name: Add a cron job to make backups and delete old ones
       copy:
         src: './make-backups.cron'
-        dest: /etc/cron.weekly/make-backups.cron'
+        dest: '/etc/cron.weekly/make-backups.cron'
         backup: yes
         group: root
         owner: root
