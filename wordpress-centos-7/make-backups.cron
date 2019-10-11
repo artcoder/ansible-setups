@@ -9,8 +9,12 @@ tar  -cpzf /var/spool/backup/backup-$(hostname -s)-www-$(date +"%Y-%m-%d_%H%M%S"
 
 mysqldump wordpress > /var/spool/backup/backup-$(hostname -s)-wordpress$(date +"%Y-%m-%d_%H%M%S").sql
 
-# tar database backup file
+# Maybe tar the database dump file?
 
-# Find files that are a few months old,
-#  and that are named like /var/spool/backup/backup-$(hostname -s)*.tgz
-# Delete those files
+# Delete old backup files
+# Find
+#  * files named like /var/spool/backup/backup-
+#  * that are regular files
+#  * that are at least 90 days old.
+# Delete them
+find /var/spool/backup/backup-* -type f -mtime +90 -delete
