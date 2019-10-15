@@ -371,15 +371,15 @@
         immediate: yes
         state: enabled
 
-#    - name: Add an email alias to forward root's email
-#      lineinfile:
-#        path: /etc/aliases
-#        regexp: '^.?root: .*$'
-#        line: 'root: {{ email_to }}'
-#        backup: yes
+    - name: Add an email alias to forward root's email to
+      lineinfile:
+        path: /etc/aliases
+        regexp: '^.?root: .*$'
+        line: 'root: {{ email_to }}'
+        backup: yes
 
-#    - name: Apply the email alias
-#      command: newaliases
+    - name: Apply the email alias
+      command: newaliases
 
     - name: Enable and start chronyd service
       service:
