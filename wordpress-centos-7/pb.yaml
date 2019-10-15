@@ -1,11 +1,8 @@
 ---
 # To install WordPress on a low-RAM CentOS 7 cloud server
 #
-# Applies to Ansible hosts in the wordpress group, so
-# edit /etc/ansible/hosts to add a wordpress group and put your servers in it.
-#
 # This assumes SSH key login, so
-# Set up SSH login to the remote server before running this playbook.
+# set up SSH login to the remote server before running this playbook.
 #
 # Reads passwords and SSL files from a vault, so make the vault with:
 #   ansible-vault create secret.yml
@@ -15,21 +12,30 @@
 # It needs aide-email.cron, make-backups.cron, and reboot-for-updates.cron
 #   in the same folder as this playbook.
 
-# Run with something like:
+# Run this with something like:
 #   ansible-playbook pb.yaml --ask-vault-pass
 
 
 ########################
 # Begin configuration
 
+# This applies to the Ansible clients in the "wordpress".
+# Edit /etc/ansible/hosts to add a "wordpress" group and put your servers in it.
 - hosts: wordpress
+
+# The user Ansible will logon to SSH on the clients as
   remote_user: centos
   become: yes
+
   vars: 
-    swap_file_path: '/swapfile'
     ssl_filename_heading: 'scrambled_xyz'
     website_domain_name: ' scrambled.xyz'
-  # email_to: 'user@example.com'
+    swap_file_path: '/swapfile'
+
+  vars_prompt:
+    - name: email_to
+      prompt: "Where should notifications be emailed to?"
+      private: no
 
   # Store passwords in the file secret.yml:
   # wordpress_database_user_password: password-here
@@ -43,7 +49,7 @@
   tasks:
 
     # Add a swap file so Yum / MariaDB can run on a low RAM machine.
-    - name: Create swap file
+    - name: Create a swap file
       command: dd if=/dev/zero of={{ swap_file_path }} bs=1024 count=4M
                creates="{{ swap_file_path }}"
 
@@ -70,9 +76,10 @@
              dump=0
              state=present
 
-    - name: If there is no swap space, turn it on
+    - name: Turn on swap space
       command: "swapon {{ swap_file_path }}"
       when: ansible_swaptotal_mb < 1
+
 
 
     - name: Upgrade all packages
@@ -179,7 +186,7 @@
     - name: Set the hostname
       command: hostnamectl set-hostname {{ website_domain_name }}
     
-    - name: Enable and start httpd service
+    - name: Enable and start the httpd service
       service:
        name: httpd
        enabled: yes
@@ -213,7 +220,7 @@
        enabled: yes
        state: started
        
-    - name: Enable MariaDB repository
+    - name: Enable the MariaDB repository
       yum_repository:
         name: MariaDB
         description: MariaDB repository for CentOS 7
@@ -230,7 +237,7 @@
         - MySQL-python
        state: latest
 
-    - name: Enable and start MariaDB service
+    - name: Enable and start the MariaDB service
       service:
        name: mariadb
        enabled: yes
@@ -308,6 +315,9 @@
       args:
         creates: /var/www/html/wp-settings.php
 
+# Need to add
+#   define('FS_METHOD', 'direct');
+# to wp-config.php to allow updates without FTP / SSH
 
     # change the file owner and permissions for the WordPress files
     - name: Give "apache" permissions to the WordPress folder
