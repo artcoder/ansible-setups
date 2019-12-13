@@ -4,18 +4,18 @@ umask 077
 
 # Need to create /var/spool/backup if it doesn't exist
 
-tar  -cpzf /var/spool/backup/backup-$(hostname -s)-etc-$(date +"%Y-%m-%d_%H%M%S").tgz /etc
-tar  -cpzf /var/spool/backup/backup-$(hostname -s)-home-$(date +"%Y-%m-%d_%H%M%S").tgz /home
-tar  -cpzf /var/spool/backup/backup-$(hostname -s)-logs-$(date +"%Y-%m-%d_%H%M%S").tgz /var/log
-tar  -cpzf /var/spool/backup/backup-$(hostname -s)-www-$(date +"%Y-%m-%d_%H%M%S").tgz /var/www
+tar  -cpzf /var/spool/backup/backup-$(hostname -s)-$(date +"%Y-%m-%d_%H%M%S")-etc.tgz /etc
+tar  -cpzf /var/spool/backup/backup-$(hostname -s)-$(date +"%Y-%m-%d_%H%M%S")-home.tgz /home
+tar  -cpzf /var/spool/backup/backup-$(hostname -s)-$(date +"%Y-%m-%d_%H%M%S")-logs.tgz /var/log
+tar  -cpzf /var/spool/backup/backup-$(hostname -s)-$(date +"%Y-%m-%d_%H%M%S")-www.tgz /var/www
 
-mysqldump wordpress > /var/spool/backup/backup-$(hostname -s)-wordpress$(date +"%Y-%m-%d_%H%M%S").sql
+mysqldump wordpress > /var/spool/backup/backup-$(hostname -s)-$(date +"%Y-%m-%d_%H%M%S")-wordpress.sql
 
 # Maybe tar the database dump file?
 
 # Delete old backup files
-# Find
-#  * files named like /var/spool/backup/backup-
+# Find files
+#  * named like /var/spool/backup/backup-
 #  * that are regular files
 #  * that are at least 90 days old.
 # Delete them
