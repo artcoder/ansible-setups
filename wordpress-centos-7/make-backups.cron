@@ -1,6 +1,7 @@
 #!/bin/bash
 
-umask 077
+#user:full, group: read, others: none
+umask 037
 
 # Need to create /var/spool/backup if it doesn't exist
 
