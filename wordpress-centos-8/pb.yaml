@@ -220,14 +220,11 @@
        enabled: yes
        state: started
 
-    - name: Install MariaDB
-      dnf:
-       name: mariadb
-       state: latest
-        
+
     - name: Install MariaDB / MySQL database packages
       dnf:
        name:
+        - mariadb
         - MariaDB-server
 #       - MariaDB-client
         - MySQL-python
@@ -254,7 +251,7 @@
     #dnf module install php:remi-7.4
 
     # https://make.wordpress.org/hosting/handbook/handbook/server-environment/#php-extensions
-    - name: Install PHP extensions
+    - name: Install PHP and extensions
       dnf:
         name:
           - php
@@ -383,19 +380,25 @@
         enabled: yes
         state: started
 
-    - name: Set dnf-cron to download patches daily
+    - name: Set dnf-automatic to download patches
       lineinfile:
-        path: /etc/dnf/dnf-cron.conf
+        path: /etc/dnf/automatic.conf
         regexp: '^download_updates = .*$'
         line: 'download_updates = yes'
         backup: yes
         
-    - name: Set dnf-cron to install patches daily
+    - name: Set dnf-automatic to install patches
       lineinfile:
         path: /etc/dnf/automatic.conf
         regexp: '^apply_updates = .*$'
         line: 'apply_updates = yes'
         backup: yes
+
+    - name: Enable and start the dnf-automatic.timer service
+      service:
+       name: dnf-automatic.timer
+       enabled: yes
+       state: started
 
     - name: Add a cron job to reboot daily if needed for patches
       copy:
