@@ -1,0 +1,7 @@
+#!/bin/bash
+
+#Ask yum-utils if a reboot is needed for package upgrades.
+#Schedule a reboot if needed.
+#Notify all terminals.
+
+needs-restarting -r || shutdown -r 18:00 "Restarting for patches."

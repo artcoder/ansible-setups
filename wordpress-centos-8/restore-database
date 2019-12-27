@@ -1,0 +1,5 @@
+#!/bin/bash
+
+mysql -u root wordpress < [filename].sql
+# reset workpress user's password in mysql and /var/www/html/wp-config.php
+tar -xzvf backup-file.tgz -C /

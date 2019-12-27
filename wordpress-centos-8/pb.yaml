@@ -1,0 +1,447 @@
+---
+# To install WordPress on a low-RAM CentOS 8 cloud server
+#
+# This assumes SSH key login, 
+#   so set up SSH login to the remote server before running this playbook.
+#
+# Reads passwords and SSL files from a vault, so make the vault with:
+#   ansible-vault create secret.yml
+# Add the SSL files to the vault using the same password:
+#   ansible-vault encrypt site.key site.crt site.ca-bundle
+#
+# It needs aide-email.cron, make-backups.cron, and reboot-for-updates.cron
+#   in the same folder as this playbook.
+
+# Run this with something like:
+#   ansible-playbook pb.yaml --ask-vault-pass
+
+
+########################
+# Begin configuration
+
+# This applies to the Ansible clients in the "wordpress".
+# Edit /etc/ansible/hosts to add a "wordpress" group and put your servers in it.
+- hosts: wordpress
+
+# The user Ansible will logon to SSH on the clients as
+  remote_user: centos
+  become: yes
+
+  vars: 
+    ssl_filename_heading: 'scrambled_xyz'
+    website_domain_name: 'scrambled.xyz'
+    swap_file_path: '/swapfile'
+
+  vars_prompt:
+    - name: email_to
+      prompt: "Where should notifications be emailed to?"
+      private: no
+
+  # Store passwords in the file secret.yml:
+  # wordpress_database_user_password: password-here
+  vars_files:
+    - "secret.yml"
+    
+# End configuration
+########################
+
+
+  tasks:
+
+    # Add a swap file so dnf / MariaDB can run on a low RAM machine.
+    - name: Create a swap file
+      command: dd if=/dev/zero of={{ swap_file_path }} bs=1024 count=4M
+               creates="{{ swap_file_path }}"
+
+    - name: Set swap file permissions
+      file: path="{{ swap_file_path }}"
+            owner=root
+            group=root
+            mode=0600
+
+    - name: Check if swap space exists
+      command: file {{ swap_file_path }}
+      register: swapfile
+
+    - name: Make swap space if needed
+      command: "mkswap {{ swap_file_path }}"
+      when: swapfile.stdout.find('swap file') == -1
+
+    - name: Write swap entry in fstab
+      mount: name=none
+             src={{ swap_file_path }}
+             fstype=swap
+             opts=sw
+             passno=0
+             dump=0
+             state=present
+
+    - name: Turn on swap space
+      command: "swapon {{ swap_file_path }}"
+      when: ansible_swaptotal_mb < 1
+
+
+
+    - name: Upgrade all packages
+      dnf:
+       name: '*'
+       state: latest
+
+    - name: Install httpd packages
+      dnf:
+       name: 
+        - httpd
+        - mod_ssl
+       state: latest
+
+    - name: Copy domain certificate file
+      copy:
+        src: "./{{ ssl_filename_heading }}.crt"
+        dest: "/etc/pki/tls/certs/"
+        backup: yes
+        group: root
+        owner: root
+        mode: u+rw,g=,o=
+
+    - name: Copy certificate authority bundle file
+      copy:
+        src: "./{{ ssl_filename_heading }}.ca-bundle"
+        dest: "/etc/pki/tls/certs/"
+        backup: yes
+        group: root
+        owner: root
+        mode: u+rw,g=,o=
+        
+    - name: Copy private key file
+      copy:
+        src: "./{{ ssl_filename_heading }}.key"
+        dest: "/etc/pki/tls/private/"
+        backup: yes
+        group: root
+        owner: root
+        mode: u+rw,g=,o=
+
+# edit conf.file
+# add
+# redirect to https
+# Redirect / https://secure.example.com/
+# Redirect permanent / https://secure.example.com/
+
+    - name: Set the web site's domain name
+      lineinfile:
+        path: /etc/httpd/conf.d/ssl.conf
+        regexp: '^#?ServerName .*$'
+        line:  'ServerName {{ website_domain_name }}:443'
+        backup: yes
+        
+    - name: Disable weak SSL Protocols
+      lineinfile:
+        path: /etc/httpd/conf.d/ssl.conf
+        regexp: '^SSLProtocol .*$'
+        line:  'SSLProtocol all -SSLv2 -SSLv3 -TLSv1 -TLSv1.1'
+        backup: yes
+
+    - name: Disable weak SSL Cipher Suites
+      lineinfile:
+        path: /etc/httpd/conf.d/ssl.conf
+        regexp: '^SSLCipherSuite .*$'
+        line:  'SSLCipherSuite ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256'
+        backup: yes
+        
+    - name: Disable SSL Compression
+      lineinfile:
+        path: /etc/httpd/conf.d/ssl.conf
+        insertbefore: '^\s*<VirtualHost _default_:443>'
+        line:  'SSLCompression off'
+        backup: yes
+        
+    - name: Disable SSL SessionTickets
+      lineinfile:
+        path: /etc/httpd/conf.d/ssl.conf
+        insertbefore: '^\s*SSLCompression off'
+        line:  'SSLSessionTickets off'
+        backup: yes
+    
+    - name: Install the SSL certificate
+      lineinfile:
+        path: /etc/httpd/conf.d/ssl.conf
+        regexp: '^#?\s*SSLCertificateFile .*$'
+        line:  'SSLCertificateFile /etc/pki/tls/certs/{{ ssl_filename_heading }}.crt'
+        backup: yes
+        
+    - name: Install the SSL certificate authority certificate chain
+      lineinfile:
+        path: /etc/httpd/conf.d/ssl.conf
+        regexp: '^#?\s*SSLCACertificateFile .*$'
+        line:  'SSLCACertificateFile /etc/pki/tls/certs/{{ ssl_filename_heading }}.ca-bundle'
+        backup: yes
+        
+    - name: Install the SSL certificate private key
+      lineinfile:
+        path: /etc/httpd/conf.d/ssl.conf
+        regexp: '^SSLCertificateKeyFile .*$'
+        line:  'SSLCertificateKeyFile /etc/pki/tls/private/{{ ssl_filename_heading }}.key'
+        backup: yes
+
+    - name: Set the hostname
+      command: hostnamectl set-hostname {{ website_domain_name }}
+    
+    - name: Enable and start the httpd service
+      service:
+       name: httpd
+       enabled: yes
+       state: started
+
+    - name: Install epel-release package
+      dnf:
+       name: epel-release
+       state: latest
+
+    - name: Install utility packages
+      dnf:
+       name:
+        - nano
+        - mc
+        - policycoreutils-python
+        - net-tools
+        - unzip
+        - mailx
+        - fail2ban
+        - dnf-automatic
+        - dnf-utils
+        - aide
+        - haveged
+        - chrony
+       state: latest
+
+    - name: Enable and start the haveged service for better entropy
+      service:
+       name: haveged
+       enabled: yes
+       state: started
+
+    - name: Install MariaDB
+      dnf:
+       name: mariadb
+       state: latest
+        
+    - name: Install MariaDB / MySQL database packages
+      dnf:
+       name:
+        - MariaDB-server
+#       - MariaDB-client
+        - MySQL-python
+       state: latest
+
+    - name: Enable and start the MariaDB service
+      service:
+       name: mariadb
+       enabled: yes
+       state: started
+
+    - name: Install EPEL repository configuration package
+      dnf:
+       name: https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+       state: latest
+
+    - name: Install Remi's PHP repository package
+      dnf:
+       name: https://rpms.remirepo.net/enterprise/remi-release-8.rpm
+       state: latest     
+    
+    #needed:
+    #dnf module reset php
+    #dnf module install php:remi-7.4
+
+    # https://make.wordpress.org/hosting/handbook/handbook/server-environment/#php-extensions
+    - name: Install PHP extensions
+      dnf:
+        name:
+          - php
+          - php-mysqlnd
+          - php-bcmath
+          - php-imagick
+          - php-xml
+          - php-xmlrpc
+          - php-json
+          - php-mbstring
+          - php-ssh2
+          - php-posix
+        state: latest
+
+    - name: Restart the httpd service to enable PHP
+      service:
+       name: httpd
+       state: restarted
+
+#    - name: Set the MySql root user's password
+#      command: mysqladmin -u root password ""
+# needs to include the db user password for future runs
+
+    # mysql -u root
+    # mysql> CREATE DATABASE wordpress;
+    - name: Create a database for WordPress
+      mysql_db:
+        name: wordpress
+        state: present
+
+    # mysql> CREATE USER 'wordpress'@'localhost' IDENTIFIED BY 'password';
+    # mysql> GRANT ALL PRIVILEGES ON wordpress.* TO 'wordpress'@'localhost';
+    # mysql> FLUSH PRIVILEGES;
+
+    - name: Create user and set password for WordPress to login to database with
+      mysql_user:
+        name: wordpress
+        state: present
+        priv: wordpress.*:ALL
+        password: "{{ wordpress_database_user_password }}"
+
+#   Need to do the equivalent of run mysql_secure_installation 
+
+
+    - name: Download and extract the WordPress installation archive
+      unarchive:
+        src: https://wordpress.org/latest.tar.gz
+        dest: ~/
+        remote_src: yes
+        creates: ~/wordpress
+        
+    - name: Copy WordPress files to the web site root folder
+      command: cp -r ~/wordpress/. /var/www/html
+      args:
+        creates: /var/www/html/wp-settings.php
+
+# Need to add
+#   define('FS_METHOD', 'direct');
+# to wp-config.php to allow updates without FTP / SSH
+
+    # change the file owner and permissions for the WordPress files
+    - name: Give "apache" permissions to the WordPress folder
+      file:
+        path: /var/www/html
+        owner: apache
+        group: apache
+        mode: 0755
+        recurse: yes
+      tags: apache-permissions
+        
+    # Tell SElinux to allow writes for WP install
+    # semanage fcontext -a -t httpd_sys_rw_content_t "/var/www/html(/.*)?" 
+    # sudo restorecon -R -v /var/www/html/
+    # /var/www/html/uploads
+    - name: Allow httpd to modify WordPress files for updates
+      sefcontext:
+        target: '/var/www/html(/.*)?'
+        setype: httpd_sys_rw_content_t
+        state: present
+      tags: apache-permissions
+
+    - name: Apply SELinux file context
+      command: restorecon -i -R /var/www/html
+      tags: apache-permissions
+
+    - name: Enable and start the firewall service
+      service:
+       name: firewalld
+       enabled: yes
+       state: started
+       
+    - name: Allow HTTP through the local firewall
+      firewalld:
+        service: http
+        permanent: yes
+        immediate: yes
+        state: enabled
+
+    - name: Allow HTTPS through the local firewall
+      firewalld:
+        service: https
+        permanent: yes
+        immediate: yes
+        state: enabled
+
+    - name: Allow Network Time Protocol through the local firewall
+      firewalld:
+        service: ntp
+        permanent: yes
+        immediate: yes
+        state: enabled
+
+    - name: Add an email alias to forward root's email to
+      lineinfile:
+        path: /etc/aliases
+        regexp: '^.?root: .*$'
+        line: 'root: {{ email_to }}'
+        backup: yes
+
+    - name: Apply the email alias
+      command: newaliases
+
+    - name: Enable and start chronyd service
+      service:
+        name: chronyd
+        enabled: yes
+        state: started
+
+    - name: Set dnf-cron to download patches daily
+      lineinfile:
+        path: /etc/dnf/dnf-cron.conf
+        regexp: '^download_updates = .*$'
+        line: 'download_updates = yes'
+        backup: yes
+        
+    - name: Set dnf-cron to install patches daily
+      lineinfile:
+        path: /etc/dnf/automatic.conf
+        regexp: '^apply_updates = .*$'
+        line: 'apply_updates = yes'
+        backup: yes
+
+    - name: Add a cron job to reboot daily if needed for patches
+      copy:
+        src: './reboot-for-updates.cron'
+        dest: '/etc/cron.daily/reboot-for-updates.cron'
+        backup: yes
+        group: root
+        owner: root
+        mode: u+rwx,g=rx,o=rx
+
+
+    - name: Set the minimum password length
+      lineinfile:
+        path: /etc/security/pwquality.conf
+        regexp: '^minlen = .*$'
+        line: 'minlen = 12'
+        backup: yes
+
+    - name: Set the minimum character classes in password
+      lineinfile:
+        path: /etc/security/pwquality.conf
+        regexp: '^minclass = .*$'
+        line: 'minclass = 3'
+        backup: yes
+
+
+    - name: Initialize the AIDE database - takes about 10 minutes
+      shell: aide --init && mv -n /var/lib/aide/aide.db.new.gz /var/lib/aide/aide.db.gz
+               creates="/var/lib/aide/aide.db.gz"
+               
+    - name: Add a cron job to update the AIDE database and email results
+      copy:
+        src: './aide-email.cron'
+        dest: '/etc/cron.daily/aide-email.cron'
+        backup: yes
+        group: root
+        owner: root
+        mode: u+rwx,g=,o=
+
+    - name: Add a cron job to make backups and delete old ones
+      copy:
+        src: './make-backups.cron'
+        dest: '/etc/cron.weekly/make-backups.cron'
+        backup: yes
+        group: root
+        owner: root
+        mode: u+rwx,g=rx,o=rx
+
+...
