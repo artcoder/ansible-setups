@@ -121,21 +121,14 @@
         owner: root
         mode: u+rw,g=,o=
 
-# edit conf.file
-# add
-# redirect to HTTPS
-# Redirect / https://{{ website_domain_name }}/
-# Redirect permanent / https://{{ website_domain_name }}/
     - name: Redirect clients to HTTPS
       lineinfile:
         path: /etc/httpd/conf/httpd.conf
         insertafter: '^Listen 80$'
         firstmatch: yes
-        regexp: '^Redirect /'
+        regexp: '^Redirect / https://'
         line:  'Redirect / https://{{ website_domain_name }}/'
         backup: yes
-
-
 
     - name: Set the web site's domain name
       lineinfile:
@@ -192,6 +185,8 @@
         regexp: '^SSLCertificateKeyFile .*$'
         line:  'SSLCertificateKeyFile /etc/pki/tls/private/{{ ssl_filename_heading }}.key'
         backup: yes
+
+
 
     - name: Set the hostname
       command: hostnamectl set-hostname {{ website_domain_name }}
