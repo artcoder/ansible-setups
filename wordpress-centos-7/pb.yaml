@@ -121,14 +121,21 @@
         owner: root
         mode: u+rw,g=,o=
 
-    - name: Redirect clients to HTTPS
-      lineinfile:
-        path: /etc/httpd/conf/httpd.conf
-        insertafter: '^Listen 80$'
-        firstmatch: yes
-        regexp: '^Redirect / https://'
-        line:  'Redirect / https://{{ website_domain_name }}/'
-        backup: yes
+#    - name: Redirect clients to HTTPS
+#      lineinfile:
+#        path: /etc/httpd/conf/httpd.conf
+#        insertafter: '^Listen 80$'
+#        firstmatch: yes
+#        regexp: '^Redirect / https://'
+#        line:  'Redirect / https://{{ website_domain_name }}/'
+#        backup: yes
+
+# Need to rewrite like:
+#<VirtualHost *:80>
+#   ServerName {{ website_domain_name }}:80
+#   Redirect permanent / https://{{ website_domain_name }}/
+#</VirtualHost>
+
 
     - name: Set the web site's domain name
       lineinfile:
@@ -405,6 +412,10 @@
         regexp: '^apply_updates = .*$'
         line: 'apply_updates = yes'
         backup: yes
+        
+# Need to set yum-cron to email the output
+
+
 
     - name: Add a cron job to reboot daily if needed for patches
       copy:
