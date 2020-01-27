@@ -126,6 +126,16 @@
 # redirect to HTTPS
 # Redirect / https://{{ website_domain_name }}/
 # Redirect permanent / https://{{ website_domain_name }}/
+    - name: Redirect clients to HTTPS
+      lineinfile:
+        path: /etc/httpd/conf/httpd.conf
+        insertafter: '^Listen 80$'
+        firstmatch: yes
+        regexp: '^Redirect /'
+        line:  'Redirect / https://{{ website_domain_name }}/'
+        backup: yes
+
+
 
     - name: Set the web site's domain name
       lineinfile:
