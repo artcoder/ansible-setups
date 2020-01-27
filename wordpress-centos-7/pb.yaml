@@ -29,7 +29,7 @@
 
   vars: 
     ssl_filename_heading: 'scrambled_xyz'
-    website_domain_name: ' scrambled.xyz'
+    website_domain_name: 'scrambled.xyz'
     swap_file_path: '/swapfile'
 
   vars_prompt:
@@ -123,9 +123,9 @@
 
 # edit conf.file
 # add
-# redirect to https
-# Redirect / https://secure.example.com/
-# Redirect permanent / https://secure.example.com/
+# redirect to HTTPS
+# Redirect / https://{{ website_domain_name }}/
+# Redirect permanent / https://{{ website_domain_name }}/
 
     - name: Set the web site's domain name
       lineinfile:
