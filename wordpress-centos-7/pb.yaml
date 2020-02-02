@@ -413,18 +413,12 @@
         line: 'apply_updates = yes'
         backup: yes
         
-<<<<<<< Updated upstream
-# Need to set yum-cron to email the output
-
-
-=======
     - name: Set yum-cron to email updates
       lineinfile:
         path: /etc/yum/yum-cron.conf
         regexp: '^emit_via = .*$'
         line: 'emit_via = email'
         backup: yes
->>>>>>> Stashed changes
 
     - name: Add a cron job to reboot daily if needed for patches
       copy:
