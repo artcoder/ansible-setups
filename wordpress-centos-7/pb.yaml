@@ -232,6 +232,16 @@
        enabled: yes
        state: started
        
+    - name: Enable and start the fail2ban service to delay brute force attacks
+      service:
+       name: fail2ban
+       enabled: yes
+       state: started
+       
+# Copy files
+# /etc/fail2ban/filter.d/apache-wordpress-logon.conf
+# /etc/fail2ban/jail.local 
+
     - name: Enable the MariaDB repository
       yum_repository:
         name: MariaDB
