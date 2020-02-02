@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# The file name is like: backup-$(hostname -s)-$(date +"%Y-%m-%d_%H%M%S")-wordpress.sql
 mysql -u root wordpress < [filename].sql
-# reset workpress user's password in mysql and /var/www/html/wp-config.php
-tar -xzvf backup-file.tgz -C /
+
+# Reset workpress user's password in mysql and /var/www/html/wp-config.php
+
+# Restore the /var/www/html/ files
+# tar -xzvf backup-$(hostname -s)-$(date +"%Y-%m-%d_%H%M%S")-www.tgz -C /
