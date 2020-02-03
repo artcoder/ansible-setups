@@ -13,14 +13,14 @@
 #   in the same folder as this playbook.
 
 # Run this with something like:
-#   ansible-playbook pb.yaml --ask-vault-pass
+#   ansible-playbook main.yaml --ask-vault-pass
 
 
 ########################
 # Begin configuration
 
 # This applies to the Ansible clients in the "wordpress".
-# Edit /etc/ansible/hosts to add a "wordpress" group and put your servers in it.
+# Edit /etc/ansible/hosts to add a "wordpress" group and put your server in it.
 - hosts: wordpress
 
 # The user Ansible will logon to SSH on the clients as
@@ -45,6 +45,12 @@
 # End configuration
 ########################
 
+# Future plans:
+# Break out the swap file tasks to a separate file.
+# Bring the generic server tasks up near the top of this file.
+# Break out the httpd / Apache tasks to a separate file
+# Break out the MariaDB / MySQL tasks to a separate file
+# Break out the PHP tasks to a separate file
 
   tasks:
 
