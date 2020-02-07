@@ -1,0 +1,8 @@
+[sshd]
+enabled = true
+
+[apache-wordpress-logon]
+enabled = true
+port = http,https
+filter = apache-wordpress-logon
+logpath = /var/log/httpd/ssl_access_log
