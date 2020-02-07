@@ -361,7 +361,7 @@
           - php
           - php-mysqlnd
           - php-bcmath
-          - php-imagick
+          #- php-imagick
           - php-xml
           - php-xmlrpc
           - php-json
