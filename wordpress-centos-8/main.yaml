@@ -391,6 +391,17 @@
        enabled: yes
        state: started
 
+    - name: Install Python 3 PIP
+      dnf:
+       name:
+        - python3-pip
+       state: latest
+       
+    - name: Install MySQL library for Python 3 using PIP
+      pip:
+        name: PyMySQL
+
+
 #    - name: Set the MySql root user's password
 #      command: mysqladmin -u root password ""
 # needs to include the db user password for future runs
