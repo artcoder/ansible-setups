@@ -56,7 +56,7 @@
     # Add a swap file so dnf / MariaDB can run on a low RAM machine.
     - include_playbook: swap-file.yaml
       vars:
-        swap_file_path: {{ swap_file_path }}
+        swap_file_path: "{{ swap_file_path }}"
 
     - name: Add an email alias to forward root's email to
       lineinfile:
