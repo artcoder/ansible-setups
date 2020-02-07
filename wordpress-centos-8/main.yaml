@@ -98,7 +98,6 @@
         name:
           - nano
           - mc
-          - policycoreutils-python
           - net-tools
           - unzip
           - mailx
