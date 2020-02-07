@@ -109,7 +109,7 @@
           - haveged
           - chrony
           - postfix
-       state: latest
+        state: latest
 
     - name: Add an email alias to forward root's email to
       lineinfile:
