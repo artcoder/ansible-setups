@@ -380,7 +380,7 @@
       dnf:
        name:
         - mariadb
-        - MariaDB-server
+#       - MariaDB-server
 #       - MariaDB-client
         - MySQL-python
        state: latest
