@@ -95,20 +95,20 @@
 
     - name: Install utility packages
       dnf:
-       name:
-        - nano
-        - mc
-        - policycoreutils-python
-        - net-tools
-        - unzip
-        - mailx
-        - fail2ban
-        - dnf-automatic
-        - dnf-utils
-        - aide
-        - haveged
-        - chrony
-        - postfix
+        name:
+          - nano
+          - mc
+          - policycoreutils-python
+          - net-tools
+          - unzip
+          - mailx
+          - fail2ban
+          - dnf-automatic
+          - dnf-utils
+          - aide
+          - haveged
+          - chrony
+          - postfix
        state: latest
 
     - name: Add an email alias to forward root's email to
