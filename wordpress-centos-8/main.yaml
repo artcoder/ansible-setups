@@ -159,6 +159,13 @@
        enabled: yes
        state: started
 
+    - name: Allow SSH through the local firewall
+      firewalld:
+        service: ssh
+        permanent: yes
+        immediate: yes
+        state: enabled
+
     - name: Allow Network Time Protocol through the local firewall
       firewalld:
         service: ntp
