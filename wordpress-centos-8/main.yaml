@@ -1,7 +1,7 @@
 ---
 # To install WordPress on a low-RAM CentOS 8 cloud server
 #
-# This assumes SSH key login, 
+# This assumes SSH key login, sp
 #   so set up SSH login to the remote server before running this playbook.
 #
 # Reads passwords and SSL files from a vault, so make the vault with:
@@ -46,18 +46,181 @@
 ########################
 
 
+# Future plans:
+# Break out the httpd / Apache tasks to a separate file
+# Break out the MariaDB / MySQL tasks to a separate file
+# Break out the PHP tasks to a separate file
+
   tasks:
   
     # Add a swap file so dnf / MariaDB can run on a low RAM machine.
     - include_playbook: swap-file.yaml
       vars:
         swap_file_path: {{ swap_file_path }}
-    
-    
+
+    - name: Add an email alias to forward root's email to
+      lineinfile:
+        path: /etc/aliases
+        regexp: '^.?root: .*$'
+        line: 'root: {{ email_to }}'
+        backup: yes
+
+    - name: Apply the email alias
+      command: newaliases
+
     - name: Upgrade all packages
       dnf:
        name: '*'
        state: latest
+
+    - name: Set the hostname
+      command: hostnamectl set-hostname {{ website_domain_name }}
+
+    - name: Install epel-release package
+      dnf:
+       name: epel-release
+       state: latest
+
+    - name: Install EPEL repository configuration package
+      dnf:
+       name: https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+       state: latest
+
+    - name: Install utility packages
+      dnf:
+       name:
+        - nano
+        - mc
+        - policycoreutils-python
+        - net-tools
+        - unzip
+        - mailx
+        - fail2ban
+        - dnf-automatic
+        - dnf-utils
+        - aide
+        - haveged
+        - chrony
+       state: latest
+
+    - name: Enable and start the haveged service for better entropy
+      service:
+       name: haveged
+       enabled: yes
+       state: started
+
+# Copy files
+# /etc/fail2ban/filter.d/apache-wordpress-logon.conf
+# /etc/fail2ban/jail.local 
+    - name: Add fail2ban filter for Wordpress logons
+      copy:
+        src: './apache-wordpress-logon.conf'
+        dest: '/etc/fail2ban/filter.d/apache-wordpress-logon.conf'
+        backup: yes
+        group: root
+        owner: root
+        mode: u+rw,g=r,o=r
+
+    - name: Define fail2ban jails for logons to SSH and Wordpress
+      copy:
+        src: './jail.local'
+        dest: '/etc/fail2ban/jail.local '
+        backup: yes
+        group: root
+        owner: root
+        mode: u+rw,g=r,o=r
+
+    - name: Enable and start the fail2ban service to delay brute force attacks
+      service:
+       name: fail2ban
+       enabled: yes
+       state: restarted
+
+    - name: Enable and start the firewall service
+      service:
+       name: firewalld
+       enabled: yes
+       state: started
+
+    - name: Allow Network Time Protocol through the local firewall
+      firewalld:
+        service: ntp
+        permanent: yes
+        immediate: yes
+        state: enabled
+    
+    - name: Enable and start chronyd service
+      service:
+        name: chronyd
+        enabled: yes
+        state: started
+
+    - name: Set dnf-automatic to download patches
+      lineinfile:
+        path: /etc/dnf/automatic.conf
+        regexp: '^download_updates = .*$'
+        line: 'download_updates = yes'
+        backup: yes
+        
+    - name: Set dnf-automatic to install patches
+      lineinfile:
+        path: /etc/dnf/automatic.conf
+        regexp: '^apply_updates = .*$'
+        line: 'apply_updates = yes'
+        backup: yes
+
+    - name: Enable and start the dnf-automatic.timer service
+      service:
+       name: dnf-automatic.timer
+       enabled: yes
+       state: started
+
+    - name: Add a cron job to reboot daily if needed for patches
+      copy:
+        src: './reboot-for-updates.cron'
+        dest: '/etc/cron.daily/reboot-for-updates.cron'
+        backup: yes
+        group: root
+        owner: root
+        mode: u+rwx,g=rx,o=rx
+
+    - name: Set the minimum password length
+      lineinfile:
+        path: /etc/security/pwquality.conf
+        regexp: '^minlen = .*$'
+        line: 'minlen = 12'
+        backup: yes
+
+    - name: Set the minimum character classes in password
+      lineinfile:
+        path: /etc/security/pwquality.conf
+        regexp: '^minclass = .*$'
+        line: 'minclass = 3'
+        backup: yes
+
+    - name: Initialize the AIDE database - takes about 10 minutes
+      shell: aide --init && mv -n /var/lib/aide/aide.db.new.gz /var/lib/aide/aide.db.gz
+               creates="/var/lib/aide/aide.db.gz"
+
+    - name: Add a cron job to update the AIDE database and email results
+      copy:
+        src: './aide-email.cron'
+        dest: '/etc/cron.daily/aide-email.cron'
+        backup: yes
+        group: root
+        owner: root
+        mode: u+rwx,g=,o=
+
+    - name: Add a cron job to make backups and delete old ones
+      copy:
+        src: './make-backups.cron'
+        dest: '/etc/cron.weekly/make-backups.cron'
+        backup: yes
+        group: root
+        owner: root
+        mode: u+rwx,g=rx,o=rx
+        
+        
 
     - name: Install httpd packages
       dnf:
@@ -93,11 +256,12 @@
         owner: root
         mode: u+rw,g=,o=
 
-# edit conf.file
-# add
-# redirect to https
-# Redirect / https://secure.example.com/
-# Redirect permanent / https://secure.example.com/
+# edit /etc/httpd/conf/httpd.conf to add
+# 
+#<VirtualHost *:80>
+#   ServerName {{ website_domain_name }}:80
+#   Redirect permanent / https://{{ website_domain_name }}/
+#</VirtualHost>
 
     - name: Set the web site's domain name
       lineinfile:
@@ -155,63 +319,14 @@
         line:  'SSLCertificateKeyFile /etc/pki/tls/private/{{ ssl_filename_heading }}.key'
         backup: yes
 
-    - name: Set the hostname
-      command: hostnamectl set-hostname {{ website_domain_name }}
-    
+
     - name: Enable and start the httpd service
       service:
        name: httpd
        enabled: yes
        state: started
 
-    - name: Install epel-release package
-      dnf:
-       name: epel-release
-       state: latest
 
-    - name: Install utility packages
-      dnf:
-       name:
-        - nano
-        - mc
-        - policycoreutils-python
-        - net-tools
-        - unzip
-        - mailx
-        - fail2ban
-        - dnf-automatic
-        - dnf-utils
-        - aide
-        - haveged
-        - chrony
-       state: latest
-
-    - name: Enable and start the haveged service for better entropy
-      service:
-       name: haveged
-       enabled: yes
-       state: started
-
-
-    - name: Install MariaDB / MySQL database packages
-      dnf:
-       name:
-        - mariadb
-        - MariaDB-server
-#       - MariaDB-client
-        - MySQL-python
-       state: latest
-
-    - name: Enable and start the MariaDB service
-      service:
-       name: mariadb
-       enabled: yes
-       state: started
-
-    - name: Install EPEL repository configuration package
-      dnf:
-       name: https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
-       state: latest
 
     - name: Install Remi's PHP repository package
       dnf:
@@ -242,6 +357,22 @@
       service:
        name: httpd
        state: restarted
+
+
+    - name: Install MariaDB / MySQL database packages
+      dnf:
+       name:
+        - mariadb
+        - MariaDB-server
+#       - MariaDB-client
+        - MySQL-python
+       state: latest
+
+    - name: Enable and start the MariaDB service
+      service:
+       name: mariadb
+       enabled: yes
+       state: started
 
 #    - name: Set the MySql root user's password
 #      command: mysqladmin -u root password ""
@@ -309,12 +440,7 @@
       command: restorecon -i -R /var/www/html
       tags: apache-permissions
 
-    - name: Enable and start the firewall service
-      service:
-       name: firewalld
-       enabled: yes
-       state: started
-       
+
     - name: Allow HTTP through the local firewall
       firewalld:
         service: http
@@ -328,95 +454,5 @@
         permanent: yes
         immediate: yes
         state: enabled
-
-    - name: Allow Network Time Protocol through the local firewall
-      firewalld:
-        service: ntp
-        permanent: yes
-        immediate: yes
-        state: enabled
-
-    - name: Add an email alias to forward root's email to
-      lineinfile:
-        path: /etc/aliases
-        regexp: '^.?root: .*$'
-        line: 'root: {{ email_to }}'
-        backup: yes
-
-    - name: Apply the email alias
-      command: newaliases
-
-    - name: Enable and start chronyd service
-      service:
-        name: chronyd
-        enabled: yes
-        state: started
-
-    - name: Set dnf-automatic to download patches
-      lineinfile:
-        path: /etc/dnf/automatic.conf
-        regexp: '^download_updates = .*$'
-        line: 'download_updates = yes'
-        backup: yes
-        
-    - name: Set dnf-automatic to install patches
-      lineinfile:
-        path: /etc/dnf/automatic.conf
-        regexp: '^apply_updates = .*$'
-        line: 'apply_updates = yes'
-        backup: yes
-
-    - name: Enable and start the dnf-automatic.timer service
-      service:
-       name: dnf-automatic.timer
-       enabled: yes
-       state: started
-
-    - name: Add a cron job to reboot daily if needed for patches
-      copy:
-        src: './reboot-for-updates.cron'
-        dest: '/etc/cron.daily/reboot-for-updates.cron'
-        backup: yes
-        group: root
-        owner: root
-        mode: u+rwx,g=rx,o=rx
-
-
-    - name: Set the minimum password length
-      lineinfile:
-        path: /etc/security/pwquality.conf
-        regexp: '^minlen = .*$'
-        line: 'minlen = 12'
-        backup: yes
-
-    - name: Set the minimum character classes in password
-      lineinfile:
-        path: /etc/security/pwquality.conf
-        regexp: '^minclass = .*$'
-        line: 'minclass = 3'
-        backup: yes
-
-
-    - name: Initialize the AIDE database - takes about 10 minutes
-      shell: aide --init && mv -n /var/lib/aide/aide.db.new.gz /var/lib/aide/aide.db.gz
-               creates="/var/lib/aide/aide.db.gz"
-               
-    - name: Add a cron job to update the AIDE database and email results
-      copy:
-        src: './aide-email.cron'
-        dest: '/etc/cron.daily/aide-email.cron'
-        backup: yes
-        group: root
-        owner: root
-        mode: u+rwx,g=,o=
-
-    - name: Add a cron job to make backups and delete old ones
-      copy:
-        src: './make-backups.cron'
-        dest: '/etc/cron.weekly/make-backups.cron'
-        backup: yes
-        group: root
-        owner: root
-        mode: u+rwx,g=rx,o=rx
 
 ...

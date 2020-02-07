@@ -2,7 +2,7 @@
 # Create swap space in a swap file at swap_file_path.
     
     
-    - name: Create a swap file
+    - name: Create a 4GB swap file
       command: dd if=/dev/zero of={{ swap_file_path }} bs=1024 count=4M
                creates="{{ swap_file_path }}"
 
