@@ -1,5 +1,5 @@
 ---
-# To install WordPress on a low-RAM CentOS 8 cloud server
+# To install WordPress on a low-RAM CentOS 8 cloud server from Ansible 2.4
 #
 # This assumes SSH key login, sp
 #   so set up SSH login to the remote server before running this playbook.
@@ -50,6 +50,17 @@
 # Break out the httpd / Apache tasks to a separate file
 # Break out the MariaDB / MySQL tasks to a separate file
 # Break out the PHP tasks to a separate file
+
+  # In case the target server does not have Python installed:
+  gather_facts: False
+  pre_tasks:
+  - name: Install python for Ansible to use
+      raw: test -e /usr/bin/python || (dnf install python36 -y)
+      register: output
+      changed_when: output.stdout != ""
+      tags: always
+  - setup: # Now that Python is installed, gather_facts
+
 
   tasks:
   
