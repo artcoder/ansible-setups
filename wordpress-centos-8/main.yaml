@@ -382,7 +382,7 @@
         - mariadb
 #       - MariaDB-server
 #       - MariaDB-client
-        - MySQL-python
+#       - MySQL-python
        state: latest
 
     - name: Enable and start the MariaDB service
