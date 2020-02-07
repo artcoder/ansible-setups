@@ -20,7 +20,13 @@
 # Begin configuration
 
 # This applies to the Ansible clients in the "wordpress".
-# Edit /etc/ansible/hosts to add a "wordpress" group and put your servers in it.
+# Edit /etc/ansible/hosts to add a "wordpress" group and put your servers in it:
+#
+# [wordpress]
+# <target server address>
+# [wordpress:vars]
+# ansible_python_interpreter=/usr/bin/python3
+
 - hosts: wordpress
 
 # The user Ansible will logon to SSH on the clients as
@@ -66,8 +72,8 @@
   
     # Add a swap file so dnf / MariaDB can run on a low RAM machine.
     - import_tasks: swap-file.yaml
-      vars:
-        swap_file_path: "{{ swap_file_path }}"
+#      vars:
+#        swap_file_path: "{{ swap_file_path }}"
 
     - name: Add an email alias to forward root's email to
       lineinfile:
