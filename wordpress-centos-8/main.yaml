@@ -366,7 +366,7 @@
           - php-xmlrpc
           - php-json
           - php-mbstring
-          - php-ssh2
+          #- php-ssh2
           - php-posix
         state: latest
 
