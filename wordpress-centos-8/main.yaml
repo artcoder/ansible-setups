@@ -60,7 +60,7 @@
   # In case the target server does not have Python installed:
   gather_facts: False
   pre_tasks:
-  - name: Install python for Ansible to use
+  - name: Install Python 3.6 for Ansible to use
     raw: test -e /usr/bin/python || (dnf install python36 -y)
     register: output
     changed_when: output.stdout != ""
@@ -69,21 +69,11 @@
 
 
   tasks:
-  
+
     # Add a swap file so dnf / MariaDB can run on a low RAM machine.
     - import_tasks: swap-file.yaml
 #      vars:
 #        swap_file_path: "{{ swap_file_path }}"
-
-    - name: Add an email alias to forward root's email to
-      lineinfile:
-        path: /etc/aliases
-        regexp: '^.?root: .*$'
-        line: 'root: {{ email_to }}'
-        backup: yes
-
-    - name: Apply the email alias
-      command: newaliases
 
     - name: Upgrade all packages
       dnf:
@@ -118,13 +108,24 @@
         - aide
         - haveged
         - chrony
+        - postfix
        state: latest
+
+    - name: Add an email alias to forward root's email to
+      lineinfile:
+        path: /etc/aliases
+        regexp: '^.?root: .*$'
+        line: 'root: {{ email_to }}'
+        backup: yes
 
     - name: Enable and start the haveged service for better entropy
       service:
        name: haveged
        enabled: yes
        state: started
+
+    - name: Apply the email alias
+      command: newaliases
 
 # Copy files
 # /etc/fail2ban/filter.d/apache-wordpress-logon.conf
