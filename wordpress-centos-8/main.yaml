@@ -54,7 +54,7 @@
   tasks:
   
     # Add a swap file so dnf / MariaDB can run on a low RAM machine.
-    - include_playbook: swap-file.yaml
+    - import_tasks: swap-file.yaml
       vars:
         swap_file_path: "{{ swap_file_path }}"
 
