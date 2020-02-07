@@ -397,7 +397,7 @@
         - python3-pip
        state: latest
        
-    - name: Install MySQL library for Python 3 using PIP
+    - name: Install the MySQL library for Python 3 using PIP, so Ansible can work on the database
       pip:
         name: PyMySQL
 
