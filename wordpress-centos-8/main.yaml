@@ -55,10 +55,10 @@
   gather_facts: False
   pre_tasks:
   - name: Install python for Ansible to use
-      raw: test -e /usr/bin/python || (dnf install python36 -y)
-      register: output
-      changed_when: output.stdout != ""
-      tags: always
+    raw: test -e /usr/bin/python || (dnf install python36 -y)
+    register: output
+    changed_when: output.stdout != ""
+    tags: always
   - setup: # Now that Python is installed, gather_facts
 
 
