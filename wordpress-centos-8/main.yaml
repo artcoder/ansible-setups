@@ -117,14 +117,14 @@
         line: 'root: {{ email_to }}'
         backup: yes
 
+    - name: Apply the email alias
+      command: newaliases
+
     - name: Enable and start the haveged service for better entropy
       service:
        name: haveged
        enabled: yes
        state: started
-
-    - name: Apply the email alias
-      command: newaliases
 
 # Copy files
 # /etc/fail2ban/filter.d/apache-wordpress-logon.conf
