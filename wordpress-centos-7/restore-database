@@ -3,7 +3,13 @@
 # The file name is like: backup-$(hostname -s)-$(date +"%Y-%m-%d_%H%M%S")-wordpress.sql
 mysql -u root wordpress < [filename].sql
 
-# Reset workpress user's password in mysql and /var/www/html/wp-config.php
+# Reset workpress user's password in mysql:
+# sudo mysql 
+# mysql> ALTER USER 'wordpress'@'localhost' IDENTIFIED BY 'PASSWORD-here';
+# mysql> FLUSH PRIVILEGES;
 
 # Restore the /var/www/html/ files
-# tar -xzvf backup-$(hostname -s)-$(date +"%Y-%m-%d_%H%M%S")-www.tgz -C /
+# sudo tar -xzvf backup-$(hostname -s)-$(date +"%Y-%m-%d_%H%M%S")-www.tgz -C /
+
+# restart httpd
+sudo systemctl restart httpd
