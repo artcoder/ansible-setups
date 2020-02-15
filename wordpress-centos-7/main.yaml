@@ -10,7 +10,7 @@
 # wordpress_database_user_password: put-password-here
 
 # Make the vault:
-#   ansible-vault create secret.yml
+#   ansible-vault encrypt secret.yml
 # Add the SSL files to the vault using the same password:
 #   ansible-vault encrypt site.key site.crt site.ca-bundle
 #
