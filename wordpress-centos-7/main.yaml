@@ -419,6 +419,8 @@
     # mysql> CREATE USER 'wordpress'@'localhost' IDENTIFIED BY 'password';
     # mysql> GRANT ALL PRIVILEGES ON wordpress.* TO 'wordpress'@'localhost';
     # mysql> FLUSH PRIVILEGES;
+    # or later use
+    # mysql> ALTER USER 'wordpress'@'localhost' IDENTIFIED BY 'New-Password-Here';
 
     - name: Create user and set password for WordPress to login to database with
       mysql_user:
@@ -486,5 +488,7 @@
         permanent: yes
         immediate: yes
         state: enabled
+
+    # Run the web based installation from a browser
 
 ...
