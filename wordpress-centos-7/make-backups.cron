@@ -3,7 +3,7 @@
 #user:full, group: read, others: none
 umask 037
 
-# if /var/spool/backup doesn't exist, create it
+# if the target directory doesn't exist, create it
 if [ ! -d "/var/spool/backup/" ]
 then
 	mkdir /var/spool/backup/
