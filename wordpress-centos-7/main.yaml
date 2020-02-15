@@ -38,10 +38,6 @@
 # Store the database password in the file secret.yml in this format:
 # wordpress_database_user_password: password-goes-here
 
-  vars_files:
-    - "configure.yaml"
-    - "secret.yml"
-
 # The user Ansible will logon to SSH on the target machine as
   remote_user: centos
   become: yes
@@ -49,6 +45,9 @@
 # End configuration
 ########################
 
+  vars_files:
+    - "configure.yaml"
+    - "secret.yml"
 
   tasks:
 
