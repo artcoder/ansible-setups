@@ -72,8 +72,7 @@
 
     # Add a swap file so dnf / MariaDB can run on a low RAM machine.
     - import_tasks: swap-file.yaml
-#      vars:
-#        swap_file_path: "{{ swap_file_path }}"
+
 
     - name: Upgrade all packages
       dnf:
