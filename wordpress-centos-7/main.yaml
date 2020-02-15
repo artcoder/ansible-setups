@@ -4,7 +4,12 @@
 # This assumes SSH key login, so
 # set up SSH login to the remote server before running this playbook.
 #
-# Reads passwords and SSL files from a vault, so make the vault with:
+# Reads the database password and SSL files from a vault, so have the files ready:
+
+# Make a text file named secret.yml with the contents like:
+# wordpress_database_user_password: put-password-here
+
+# Make the vault:
 #   ansible-vault create secret.yml
 # Add the SSL files to the vault using the same password:
 #   ansible-vault encrypt site.key site.crt site.ca-bundle
