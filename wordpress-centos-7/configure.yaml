@@ -1,11 +1,25 @@
 ---
 
+# Which host get configured.
+hosts: scrambled.xyz
+
+# The user Ansible will logon to SSH on the target machine as
+remote_user: centos
+
+# Use sudo to get super user permissions
+become: yes
+
 ssl_filename_heading: 'scrambled_xyz'
 website_domain_name: 'scrambled.xyz'
-swap_file_path: '/swapfile'
 email_to: 'user@example.com'
+swap_file_path: '/swapfile'
 
 # Store the database password in the file secret.yml in this format:
 # wordpress_database_user_password: password-goes-here
+
+
+# Encrypt the file with:
+#   ansible-vault encrypt secret.yml
+
 
 ...
