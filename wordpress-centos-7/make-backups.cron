@@ -13,7 +13,7 @@ fi
 chgrp wheel /var/spool/backup/
 
 # set the group sticky bit for the directory, so new files give permission to the group
-chmod g+s 
+chmod g+s /var/spool/backup/
 
 tar  -cpzf /var/spool/backup/backup-$(hostname -s)-$(date +"%Y-%m-%d_%H%M%S")-etc.tgz /etc
 tar  -cpzf /var/spool/backup/backup-$(hostname -s)-$(date +"%Y-%m-%d_%H%M%S")-home.tgz /home
