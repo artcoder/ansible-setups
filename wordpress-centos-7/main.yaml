@@ -21,40 +21,15 @@
 #   ansible-playbook main.yaml --ask-vault-pass
 
 
-########################
-# Begin configuration
-
-# This applies to the Ansible clients in the "wordpress".
-# Edit /etc/ansible/hosts to add a "wordpress" group and put your server in it.
-- hosts: wordpress
-
-# The user Ansible will logon to SSH on the clients as
-  remote_user: centos
-  become: yes
-
-  vars: 
-    ssl_filename_heading: 'scrambled_xyz'
-    website_domain_name: 'scrambled.xyz'
-    swap_file_path: '/swapfile'
-
-  vars_prompt:
-    - name: email_to
-      prompt: "Where should notifications be emailed to?"
-      private: no
-
-  # Store passwords in the file secret.yml in this format:
-  # wordpress_database_user_password: password-goes-here
-  vars_files:
-    - "secret.yml"
-    
-# End configuration
-########################
-
 # Future plans:
 # Break out the swap file tasks to a separate file.
 # Break out the httpd / Apache tasks to a separate file
 # Break out the MariaDB / MySQL tasks to a separate file
 # Break out the PHP tasks to a separate file
+
+
+# Load the configuration
+- import_tasks: configure.yaml
 
   tasks:
 
