@@ -31,12 +31,20 @@
 ########################
 # Begin configuration
 
+# Set which hosts get configured.
+# Edit /etc/ansible/hosts to add a "wordpress" group and put your server in it.
+- hosts: wordpress
+
 # Store the database password in the file secret.yml in this format:
 # wordpress_database_user_password: password-goes-here
 
   vars_files:
     - "configure.yaml"
     - "secret.yml"
+
+# The user Ansible will logon to SSH on the target machine as
+  remote_user: centos
+  become: yes
 
 # End configuration
 ########################
