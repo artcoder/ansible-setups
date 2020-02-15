@@ -3,7 +3,17 @@
 #user:full, group: read, others: none
 umask 037
 
-# Need to create /var/spool/backup if it doesn't exist
+# if /var/spool/backup doesn't exist, create it
+if [ ! -d "/var/spool/backup/" ]
+then
+	mkdir /var/spool/backup/
+fi
+
+# set the group for the directory
+chgrp wheel /var/spool/backup/
+
+# set the group sticky bit for the directory, so new files give permission to the group
+chmod g+s 
 
 tar  -cpzf /var/spool/backup/backup-$(hostname -s)-$(date +"%Y-%m-%d_%H%M%S")-etc.tgz /etc
 tar  -cpzf /var/spool/backup/backup-$(hostname -s)-$(date +"%Y-%m-%d_%H%M%S")-home.tgz /home
