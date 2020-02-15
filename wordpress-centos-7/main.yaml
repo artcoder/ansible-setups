@@ -50,40 +50,10 @@
     - "secret.yml"
 
   tasks:
-
-    # Add a swap file so Yum / MariaDB can run on a low RAM machine.
-    - name: Create a 4GB swap file
-    # 4MiB * 1024 = 4GiB
-      command: dd if=/dev/zero of={{ swap_file_path }} bs=1024 count=4M
-               creates="{{ swap_file_path }}"
-
-    - name: Set swap file permissions
-      file: path="{{ swap_file_path }}"
-            owner=root
-            group=root
-            mode=0600
-
-    - name: Check if swap space exists
-      command: file {{ swap_file_path }}
-      register: swapfile
-
-    - name: Make swap space if needed
-      command: "mkswap {{ swap_file_path }}"
-      when: swapfile.stdout.find('swap file') == -1
-
-    - name: Write swap entry in fstab
-      mount: name=none
-             src={{ swap_file_path }}
-             fstype=swap
-             opts=sw
-             passno=0
-             dump=0
-             state=present
-
-    - name: Turn on swap space
-      command: "swapon {{ swap_file_path }}"
-      when: ansible_swaptotal_mb < 1
-
+  
+    # Add a swap file so yum / MariaDB can run on a low RAM machine.
+    - name: Start swap file task
+      import_tasks: swap-file.yaml
 
 
     - name: Add an email alias to forward root's email to
