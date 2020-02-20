@@ -102,16 +102,30 @@
        name: haveged
        enabled: yes
        state: started
-       
+
+    - name: Add fail2ban filter for Wordpress logons
+      copy:
+        src: './apache-wordpress-logon.conf'
+        dest: '/etc/fail2ban/filter.d/apache-wordpress-logon.conf'
+        backup: yes
+        group: root
+        owner: root
+        mode: u+rw,g=r,o=r
+
+    - name: Define fail2ban jails for logons to SSH and Wordpress
+      copy:
+        src: './jail.local'
+        dest: '/etc/fail2ban/jail.local '
+        backup: yes
+        group: root
+        owner: root
+        mode: u+rw,g=r,o=r
+        
     - name: Enable and start the fail2ban service to delay brute force attacks
       service:
        name: fail2ban
        enabled: yes
        state: started
-       
-# Copy files
-# /etc/fail2ban/filter.d/apache-wordpress-logon.conf
-# /etc/fail2ban/jail.local 
 
     - name: Enable and start the firewall service
       service:
