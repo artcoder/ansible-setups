@@ -271,7 +271,16 @@
         regexp: '^#?ServerName .*$'
         line:  'ServerName {{ website_domain_name }}:443'
         backup: yes
-        
+
+# Need to disable directory indexes        
+#    - name: Disable directory indexes but allow SymLinks
+#      lineinfile:
+#        path: /etc/httpd/conf/httpd.conf
+#        regexp: '^Options .*$'
+#        line:  'Options FollowSymLinks'
+#        backup: yes
+
+
     - name: Disable weak SSL Protocols
       lineinfile:
         path: /etc/httpd/conf.d/ssl.conf
