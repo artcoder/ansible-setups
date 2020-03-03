@@ -1,7 +1,7 @@
 ---
 # To install WordPress on a low-RAM CentOS 8 cloud server from Ansible 2.4
 #
-# This assumes SSH key login, sp
+# This assumes SSH key login, 
 #   so set up SSH login to the remote server before running this playbook.
 #
 # Reads passwords and SSL files from a vault, so make the vault with:
@@ -127,9 +127,6 @@
        enabled: yes
        state: started
 
-# Copy files
-# /etc/fail2ban/filter.d/apache-wordpress-logon.conf
-# /etc/fail2ban/jail.local 
     - name: Add fail2ban filter for Wordpress logons
       copy:
         src: './apache-wordpress-logon.conf'
