@@ -1,0 +1,354 @@
+---
+# To install Drupal on a low-RAM CentOS 8 cloud server from Ansible 2.4
+#
+# This assumes SSH key login, 
+#   so set up SSH login to the remote server before running this playbook.
+#
+# Reads passwords and SSL files from a vault, so make the vault with:
+#   ansible-vault create secret.yml
+# Add the SSL files to the vault using the same password:
+#   ansible-vault encrypt site.key site.crt site.ca-bundle
+#
+# It needs aide-email.cron, make-backups.cron, and reboot-for-updates.cron
+#   in the same folder as this playbook.
+
+# Run this with something like:
+#   ansible-playbook main.yaml --ask-vault-pass
+
+
+########################
+# Begin configuration
+
+# This applies to the Ansible clients in the "drupal".
+# Edit /etc/ansible/hosts to add a "drupal" group and put your servers in it:
+#
+# [drupal]
+# <target server address>
+# [drupal:vars]
+# ansible_python_interpreter=/usr/bin/python3
+
+- hosts: drupal
+
+# The user Ansible will logon to SSH on the clients as
+  remote_user: centos
+  become: yes
+
+  vars: 
+    ssl_filename_heading: 'scrambled_xyz'
+    website_domain_name: 'scrambled.xyz'
+    swap_file_path: '/swapfile'
+
+  vars_prompt:
+    - name: email_to
+      prompt: "Where should notifications be emailed to?"
+      private: no
+
+  # Store passwords in the file secret.yml:
+  # drupal_database_user_password: password-here
+    
+# End configuration
+########################
+
+
+  vars_files:
+    - "secret.yml"
+    
+  # In case the target server does not have Python installed:
+  gather_facts: False
+  pre_tasks:
+  - name: Install Python 3.6 for Ansible to use
+    raw: test -e /usr/bin/python3 || (dnf install python36 -y)
+    register: output
+    changed_when: output.stdout != ""
+    tags: always
+  - setup: # Now that Python is installed, gather_facts
+
+
+  tasks:
+
+    # Add a swap file so dnf / MariaDB can run on a low RAM machine.
+    - import_tasks: swap-file.yaml
+
+
+    - name: Upgrade all packages
+      dnf:
+       name: '*'
+       state: latest
+
+    - name: Set the hostname
+      command: hostnamectl set-hostname {{ website_domain_name }}
+
+    - name: Install epel-release package
+      dnf:
+       name: epel-release
+       state: latest
+
+#    - name: Install EPEL repository configuration package
+#      dnf:
+#       name: https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+#       state: latest
+
+    - name: Install utility packages
+      dnf:
+        name:
+          - nano
+          - mc
+          - net-tools
+          - unzip
+          - mailx
+          - fail2ban
+          - dnf-automatic
+          - dnf-utils
+          - aide
+          - haveged
+          - chrony
+          - postfix
+        state: latest
+
+    - name: Add an email alias to forward root's email to
+      lineinfile:
+        path: /etc/aliases
+        regexp: '^.?root: .*$'
+        line: 'root: {{ email_to }}'
+        backup: yes
+
+    - name: Apply the email alias
+      command: newaliases
+
+    - name: Enable and start the haveged service for better entropy
+      service:
+       name: haveged
+       enabled: yes
+       state: started
+
+#    - name: Add fail2ban filter for Wordpress logons
+#      copy:
+#        src: './apache-wordpress-logon.conf'
+#        dest: '/etc/fail2ban/filter.d/apache-wordpress-logon.conf'
+#        backup: yes
+#        group: root
+#        owner: root
+#        mode: u+rw,g=r,o=r
+
+    - name: Define fail2ban jails for logons to SSH and Wordpress
+      copy:
+        src: './jail.local'
+        dest: '/etc/fail2ban/jail.local '
+        backup: yes
+        group: root
+        owner: root
+        mode: u+rw,g=r,o=r
+
+    - name: Enable and start the fail2ban service to delay brute force attacks
+      service:
+       name: fail2ban
+       enabled: yes
+       state: restarted
+
+    - name: Enable and start the firewall service
+      service:
+       name: firewalld
+       enabled: yes
+       state: started
+
+    - name: Allow SSH through the local firewall
+      firewalld:
+        service: ssh
+        permanent: yes
+        immediate: yes
+        state: enabled
+
+    - name: Allow Network Time Protocol through the local firewall
+      firewalld:
+        service: ntp
+        permanent: yes
+        immediate: yes
+        state: enabled
+    
+    - name: Enable and start chronyd service
+      service:
+        name: chronyd
+        enabled: yes
+        state: started
+
+    - name: Set dnf-automatic to download patches
+      lineinfile:
+        path: /etc/dnf/automatic.conf
+        regexp: '^download_updates = .*$'
+        line: 'download_updates = yes'
+        backup: yes
+        
+    - name: Set dnf-automatic to install patches
+      lineinfile:
+        path: /etc/dnf/automatic.conf
+        regexp: '^apply_updates = .*$'
+        line: 'apply_updates = yes'
+        backup: yes
+
+    - name: Enable and start the dnf-automatic.timer service
+      service:
+       name: dnf-automatic.timer
+       enabled: yes
+       state: started
+
+    - name: Set dnf-automatic to email messages about patches daily
+      lineinfile:
+        path: /etc/dnf/automatic.conf
+        regexp: '^emit_via = .*$'
+        line: 'emit_via = email'
+        backup: yes
+
+#    - name: Set dnf-automatic to send email as the from address
+#      lineinfile:
+#        path: /etc/dnf/automatic.conf
+#        regexp: '^email_from = .*$'
+#        line: 'email_from = {{ email_from }}'
+#        backup: yes
+
+    - name: Set dnf-automatic to email the to address
+      lineinfile:
+        path: /etc/dnf/automatic.conf
+        regexp: '^email_to = .*$'
+        line: 'email_to = {{ email_to }}'
+        backup: yes
+
+    #- name: Set dnf-automatic send email through the smtp host
+    #  lineinfile:
+    #    path: /etc/dnf/automatic.conf
+    #    regexp: '^email_host = .*$'
+    #    line: 'email_host = {{ email_host }}'
+    #    backup: yes
+
+    - name: Add a cron job to reboot daily if needed for patches
+      copy:
+        src: './reboot-for-updates.cron'
+        dest: '/etc/cron.daily/reboot-for-updates.cron'
+        backup: yes
+        group: root
+        owner: root
+        mode: u+rwx,g=rx,o=rx
+
+    - name: Set the minimum password length
+      lineinfile:
+        path: /etc/security/pwquality.conf
+        regexp: '^minlen = .*$'
+        line: 'minlen = 12'
+        backup: yes
+
+    - name: Set the minimum character classes in password
+      lineinfile:
+        path: /etc/security/pwquality.conf
+        regexp: '^minclass = .*$'
+        line: 'minclass = 3'
+        backup: yes
+
+    - name: Initialize the AIDE database - takes about 10 minutes
+      shell: aide --init && mv -n /var/lib/aide/aide.db.new.gz /var/lib/aide/aide.db.gz
+               creates="/var/lib/aide/aide.db.gz"
+
+    - name: Add a cron job to update the AIDE database and email results
+      copy:
+        src: './aide-email.cron'
+        dest: '/etc/cron.daily/aide-email.cron'
+        backup: yes
+        group: root
+        owner: root
+        mode: u+rwx,g=,o=
+
+    - name: Add a cron job to make backups and delete old ones
+      copy:
+        src: './make-backups.cron'
+        dest: '/etc/cron.weekly/make-backups.cron'
+        backup: yes
+        group: root
+        owner: root
+        mode: u+rwx,g=rx,o=rx
+
+
+    # Install HTTPd / Apache
+    - import_tasks: httpd.yaml
+
+    # Install PHP
+    - import_tasks: php.yaml
+    
+    - name: Restart the httpd service to enable PHP
+      service:
+       name: httpd
+       state: restarted
+
+    # Install MariaDB
+    - import_tasks: mariadb.yaml
+
+
+
+    # Drupal setup
+
+    # - name: Set the MySql root user's password
+    #   command: mysqladmin -u root password ""
+    # needs to include the db user password for future runs
+
+    # mysql -u root
+    # mysql> CREATE DATABASE drupal CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+    - name: Create a database for Drupal
+      mysql_db:
+        name: drupal
+        collation: COLLATE utf8mb4_general_ci
+        encoding: utf8mb4
+        state: present
+
+    # mysql> CREATE USER drupal@localhost IDENTIFIED BY "StrongDrupalP@5s";
+    # mysql> mysql> GRANT ALL ON drupal.* TO drupal@localhost IDENTIFIED BY "StrongDrupalP@5s";
+    # mysql> FLUSH PRIVILEGES;
+    # mysql> QUIT
+    - name: Create user and set password for Drupal to login to database with
+      mysql_user:
+        name: drupal
+        state: present
+        priv: drupal.*:ALL
+        password: "{{ drupal_database_user_password }}"
+
+
+#   Need to do the equivalent of run mysql_secure_installation 
+
+    # curl -OL https://www.drupal.org/download-latest/tar.gz
+    - name: Download and extract the Drupal installation archive
+      unarchive:
+        src: https://www.drupal.org/download-latest/tar.gz
+        dest: ~/
+        remote_src: yes
+        creates: ~/drupal
+        
+    - name: Copy Drupal files to the web site root folder
+      command: cp -r ~/drupal/. /var/www/html
+      args:
+        creates: /var/www/html/drupal/sites/default/default.settings.php
+
+    # change the file owner and permissions for the Drupal files
+    - name: Give "apache" permissions to the Drupal folder
+      file:
+        path: /var/www/html
+        owner: apache
+        group: apache
+        mode: 0755
+        recurse: yes
+      tags: apache-permissions
+        
+    # Tell SElinux to allow writes for Drupal install
+    # semanage fcontext -a -t httpd_sys_rw_content_t "/var/www/html(/.*)?" 
+    # sudo restorecon -R -v /var/www/html/
+    # /var/www/html/uploads
+    - name: Allow httpd to modify Drupal files for updates
+      sefcontext:
+        target: '/var/www/html(/.*)?'
+        setype: httpd_sys_rw_content_t
+        state: present
+      tags: apache-permissions
+
+    - name: Apply SELinux file context
+      command: restorecon -i -R /var/www/html
+      tags: apache-permissions
+
+
+
+
+...

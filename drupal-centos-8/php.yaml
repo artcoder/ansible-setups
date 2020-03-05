@@ -1,0 +1,23 @@
+---
+# Install PHP
+#
+
+    - name: Install PHP and extensions
+      dnf:
+        name:
+          - php
+          - php-cli
+          - php-mysqlnd
+          - php-json
+          - php-opcache
+          - php-xml
+          - php-mbstring
+          - php-gd
+          - php-curl
+        state: latest
+
+    - name: Enable and start the PHP FastCGI Process Manager service
+      service:
+       name: php-fpm
+       enabled: yes
+       state: started
