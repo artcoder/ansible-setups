@@ -3,7 +3,7 @@
 #
 
     - name: Install PHP and extensions
-      dnf:
+      apt:
         name:
           - php
           - php-cli
