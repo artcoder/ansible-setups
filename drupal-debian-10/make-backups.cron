@@ -1,0 +1,23 @@
+#!/bin/bash
+
+#user:full, group: read, others: none
+umask 037
+
+# Need to create /var/spool/backup if it doesn't exist
+
+tar  -cpzf /var/spool/backup/backup-$(hostname -s)-$(date +"%Y-%m-%d_%H%M%S")-etc.tgz /etc
+tar  -cpzf /var/spool/backup/backup-$(hostname -s)-$(date +"%Y-%m-%d_%H%M%S")-home.tgz /home
+tar  -cpzf /var/spool/backup/backup-$(hostname -s)-$(date +"%Y-%m-%d_%H%M%S")-logs.tgz /var/log
+tar  -cpzf /var/spool/backup/backup-$(hostname -s)-$(date +"%Y-%m-%d_%H%M%S")-www.tgz /var/www
+
+mysqldump wordpress > /var/spool/backup/backup-$(hostname -s)-$(date +"%Y-%m-%d_%H%M%S")-wordpress.sql
+
+# Maybe tar the database dump file?
+
+# Delete old backup files
+# Find files
+#  * named like /var/spool/backup/backup-
+#  * that are regular files
+#  * that are at least 90 days old.
+# Delete them
+find /var/spool/backup/backup-* -type f -mtime +90 -delete

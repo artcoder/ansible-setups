@@ -1,0 +1,7 @@
+#!/bin/bash
+
+#Ask dnf if a reboot is needed for package upgrades.
+#Schedule a reboot if needed.
+#Notify all terminals.
+
+dnf needs-restarting || shutdown -r 18:00 "Restarting for patches."
