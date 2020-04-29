@@ -1,5 +1,6 @@
 ---
-# To install Drupal on a low-RAM Debian 10 cloud server from Ansible 2.4
+# To install Drupal on a low-RAM Debian 10 cloud server
+# from a Debian server running Ansible 2.7
 #
 # This assumes SSH key login, 
 #   so set up SSH login to the remote server before running this playbook.
@@ -19,8 +20,8 @@
 ########################
 # Begin configuration
 
-# This applies to the Ansible clients in the "drupal".
-# Edit /etc/ansible/hosts to add a "drupal" group and put your servers in it:
+# This applies to the Ansible clients in the "drupal" group.
+# Edit /etc/ansible/hosts to add a "drupal" group and put your server in it:
 #
 # [drupal]
 # <target server address>
@@ -33,63 +34,33 @@
   remote_user: centos
   become: yes
 
-  vars: 
-    ssl_filename_heading: 'scrambled_xyz'
-    website_domain_name: 'scrambled.xyz'
-    swap_file_path: '/swapfile'
-
-  vars_prompt:
-    - name: email_to
-      prompt: "Where should notifications be emailed to?"
-      private: no
-
-  # Store passwords in the file secret.yml:
-  # drupal_database_user_password: password-here
+  vars_files:
+    - "configure.yaml"
+    - "secret.yml"
+    
+# Store passwords in the file secret.yml in this format:
+#
+# drupal_database_user_password: password-here
     
 # End configuration
 ########################
 
-
-  vars_files:
-    - "secret.yml"
-    
-  # In case the target server does not have Python installed:
-  gather_facts: False
-  pre_tasks:
-  - name: Install Python 3.6 for Ansible to use
-    raw: test -e /usr/bin/python3 || (dnf install python36 -y)
-    register: output
-    changed_when: output.stdout != ""
-    tags: always
-  - setup: # Now that Python is installed, gather_facts
-
-
   tasks:
 
-    # Add a swap file so dnf / MariaDB can run on a low RAM machine.
+    # Add a swap file so the database can run on a low RAM machine.
     - import_tasks: swap-file.yaml
 
 
     - name: Upgrade all packages
-      dnf:
+      apt:
        name: '*'
        state: latest
 
     - name: Set the hostname
       command: hostnamectl set-hostname {{ website_domain_name }}
 
-    - name: Install epel-release package
-      dnf:
-       name: epel-release
-       state: latest
-
-#    - name: Install EPEL repository configuration package
-#      dnf:
-#       name: https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
-#       state: latest
-
     - name: Install utility packages
-      dnf:
+      apt:
         name:
           - nano
           - mc
@@ -97,8 +68,8 @@
           - unzip
           - mailx
           - fail2ban
-          - dnf-automatic
-          - dnf-utils
+          - unattended-upgrades
+          - apt-listchanges
           - aide
           - haveged
           - chrony
@@ -121,16 +92,7 @@
        enabled: yes
        state: started
 
-#    - name: Add fail2ban filter for Wordpress logons
-#      copy:
-#        src: './apache-wordpress-logon.conf'
-#        dest: '/etc/fail2ban/filter.d/apache-wordpress-logon.conf'
-#        backup: yes
-#        group: root
-#        owner: root
-#        mode: u+rw,g=r,o=r
-
-    - name: Define fail2ban jails for logons to SSH and Wordpress
+    - name: Define fail2ban jails
       copy:
         src: './jail.local'
         dest: '/etc/fail2ban/jail.local '
@@ -171,32 +133,32 @@
         enabled: yes
         state: started
 
-    - name: Set dnf-automatic to download patches
-      lineinfile:
-        path: /etc/dnf/automatic.conf
-        regexp: '^download_updates = .*$'
-        line: 'download_updates = yes'
-        backup: yes
+#    - name: Set dnf-automatic to download patches
+#      lineinfile:
+#        path: /etc/dnf/automatic.conf
+#        regexp: '^download_updates = .*$'
+#        line: 'download_updates = yes'
+#        backup: yes
         
-    - name: Set dnf-automatic to install patches
-      lineinfile:
-        path: /etc/dnf/automatic.conf
-        regexp: '^apply_updates = .*$'
-        line: 'apply_updates = yes'
-        backup: yes
+#    - name: Set dnf-automatic to install patches
+#      lineinfile:
+#        path: /etc/dnf/automatic.conf
+#        regexp: '^apply_updates = .*$'
+#       line: 'apply_updates = yes'
+#        backup: yes
 
-    - name: Enable and start the dnf-automatic.timer service
-      service:
-       name: dnf-automatic.timer
-       enabled: yes
-       state: started
+#    - name: Enable and start the dnf-automatic.timer service
+#      service:
+#       name: dnf-automatic.timer
+#       enabled: yes
+#       state: started
 
-    - name: Set dnf-automatic to email messages about patches daily
-      lineinfile:
-        path: /etc/dnf/automatic.conf
-        regexp: '^emit_via = .*$'
-        line: 'emit_via = email'
-        backup: yes
+#    - name: Set dnf-automatic to email messages about patches daily
+#      lineinfile:
+#        path: /etc/dnf/automatic.conf
+#        regexp: '^emit_via = .*$'
+#        line: 'emit_via = email'
+#        backup: yes
 
 #    - name: Set dnf-automatic to send email as the from address
 #      lineinfile:
@@ -205,12 +167,12 @@
 #        line: 'email_from = {{ email_from }}'
 #        backup: yes
 
-    - name: Set dnf-automatic to email the to address
-      lineinfile:
-        path: /etc/dnf/automatic.conf
-        regexp: '^email_to = .*$'
-        line: 'email_to = {{ email_to }}'
-        backup: yes
+#    - name: Set dnf-automatic to email the to address
+#      lineinfile:
+#        path: /etc/dnf/automatic.conf
+#        regexp: '^email_to = .*$'
+#        line: 'email_to = {{ email_to }}'
+#        backup: yes
 
     #- name: Set dnf-automatic send email through the smtp host
     #  lineinfile:
