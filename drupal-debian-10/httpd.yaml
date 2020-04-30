@@ -2,7 +2,7 @@
 # Install httpd / Apache web server
 #
     - name: Install httpd packages
-      dnf:
+      apt:
        name: 
         - httpd
         - mod_ssl
