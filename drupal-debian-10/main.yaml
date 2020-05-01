@@ -64,7 +64,7 @@
           - mc
           - net-tools
           - unzip
-          - mailx
+          - bsd-mailx
           - fail2ban
           - unattended-upgrades
           - apt-listchanges
@@ -72,6 +72,8 @@
           - haveged
           - chrony
           - postfix
+          - firewalld
+#          - man
         state: latest
 
     - name: Add an email alias to forward root's email to
