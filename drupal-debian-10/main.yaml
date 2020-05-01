@@ -25,6 +25,9 @@
 #
 # [drupal]
 # <target server address>
+# [drupal:vars]
+# # For the firewalld module:
+# ansible_python_interpreter=/usr/bin/python3
 
 - hosts: drupal
 
