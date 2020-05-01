@@ -25,18 +25,16 @@
 #
 # [drupal]
 # <target server address>
-# [drupal:vars]
-# ansible_python_interpreter=/usr/bin/python3
 
 - hosts: drupal
 
 # The user Ansible will logon to SSH on the clients as
-  remote_user: admin
+  remote_user: root
   become: yes
 
   vars_files:
     - "configure.yaml"
-    - "secret.yml"
+#    - "secret.yml"
     
 # Store passwords in the file secret.yml in this format:
 #
