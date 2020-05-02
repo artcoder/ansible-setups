@@ -194,12 +194,12 @@
         owner: root
         mode: u+rwx,g=rx,o=rx
 
-    - name: Set the minimum password length
-      lineinfile:
-        path: /etc/security/pwquality.conf
-        regexp: '^minlen = .*$'
-        line: 'minlen = 12'
-        backup: yes
+#    - name: Set the minimum password length
+#      lineinfile:
+#        path: /etc/security/pwquality.conf
+#        regexp: '^minlen = .*$'
+#        line: 'minlen = 12'
+#        backup: yes
 
     - name: Set the minimum character classes in password
       lineinfile:
