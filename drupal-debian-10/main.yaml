@@ -201,12 +201,12 @@
 #        line: 'minlen = 12'
 #        backup: yes
 
-    - name: Set the minimum character classes in password
-      lineinfile:
-        path: /etc/security/pwquality.conf
-        regexp: '^minclass = .*$'
-        line: 'minclass = 3'
-        backup: yes
+#    - name: Set the minimum character classes in password
+#      lineinfile:
+#        path: /etc/security/pwquality.conf
+#        regexp: '^minclass = .*$'
+#        line: 'minclass = 3'
+#        backup: yes
 
     - name: Initialize the AIDE database - takes about 10 minutes
       shell: aide --init && mv -n /var/lib/aide/aide.db.new.gz /var/lib/aide/aide.db.gz
