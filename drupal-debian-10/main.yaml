@@ -32,7 +32,7 @@
 - hosts: drupal
 
 # The user Ansible will logon to SSH on the clients as
-  remote_user: root
+  remote_user: debian
   become: yes
 
   vars_files:
