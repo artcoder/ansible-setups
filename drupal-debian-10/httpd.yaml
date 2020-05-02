@@ -4,8 +4,8 @@
     - name: Install httpd packages
       apt:
        name: 
-        - httpd
-        - mod_ssl
+        - apache2
+        #- mod_ssl
        state: latest
 
     - name: Copy domain certificate file
