@@ -209,8 +209,8 @@
 #        backup: yes
 
     - name: Initialize the AIDE database - takes about 10 minutes
-      shell: aide --init && mv -n /var/lib/aide/aide.db.new.gz /var/lib/aide/aide.db.gz
-               creates="/var/lib/aide/aide.db.gz"
+      shell: aide --init --config=/etc/aide/aide.conf && mv -n /var/lib/aide/aide.db.new /var/lib/aide/aide.db
+        creates="/var/lib/aide/aide.db"
 
     - name: Add a cron job to update the AIDE database and email results
       copy:
