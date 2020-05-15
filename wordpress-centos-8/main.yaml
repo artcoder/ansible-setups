@@ -49,18 +49,17 @@
     - name: email_to
       prompt: "Where should notifications be emailed to?"
       private: no
+      
+  #email_to: 'user@example.com'
 
-  # Store passwords in the file secret.yml:
-  # wordpress_database_user_password: password-here
+  # Create secret.yml to store the database password
+  # secret.yml:
+  ##
+  # wordpress_database_user_password: <password-here>
+  ##
     
 # End configuration
 ########################
-
-
-# Future plans:
-# Break out the httpd / Apache tasks to a separate file
-# Break out the MariaDB / MySQL tasks to a separate file
-# Break out the PHP tasks to a separate file
 
 
   vars_files:
