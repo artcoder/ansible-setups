@@ -66,14 +66,14 @@
     - "secret.yml"
     
   # In case the target server does not have Python installed:
-  gather_facts: False
-  pre_tasks:
-  - name: Install Python 3.6 for Ansible to use
-    raw: test -e /usr/bin/python3 || (dnf install python36 -y)
-    register: output
-    changed_when: output.stdout != ""
-    tags: always
-  - setup: # Now that Python is installed, gather_facts
+  #gather_facts: False
+  #pre_tasks:
+  #- name: Install Python 3.6 for Ansible to use
+  #  raw: test -e /usr/bin/python3 || (dnf install python36 -y)
+  #  register: output
+  #  changed_when: output.stdout != ""
+  #  tags: always
+  #- setup: # Now that Python is installed, gather_facts
 
 
   tasks:
