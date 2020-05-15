@@ -438,9 +438,9 @@
       args:
         creates: /var/www/html/wp-settings.php
 
-# Need to add
+# Need to add this to the end of the file wp-config.php to allow updates without FTP / SSH
 #   define('FS_METHOD', 'direct');
-# to wp-config.php to allow updates without FTP / SSH
+
 
     # change the file owner and permissions for the WordPress files
     - name: Give "apache" permissions to the WordPress folder

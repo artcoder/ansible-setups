@@ -1,0 +1,70 @@
+---
+# Wordpress setup
+#
+#    - name: Set the MySql root user's password
+#      command: mysqladmin -u root password ""
+# needs to include the db user password for future runs
+
+    # mysql -u root
+    # mysql> CREATE DATABASE wordpress;
+    - name: Create a database for WordPress
+      mysql_db:
+        name: wordpress
+        state: present
+
+    # mysql> CREATE USER 'wordpress'@'localhost' IDENTIFIED BY 'password';
+    # mysql> GRANT ALL PRIVILEGES ON wordpress.* TO 'wordpress'@'localhost';
+    # mysql> FLUSH PRIVILEGES;
+
+    - name: Create user and set password for WordPress to login to database with
+      mysql_user:
+        name: wordpress
+        state: present
+        priv: wordpress.*:ALL
+        password: "{{ wordpress_database_user_password }}"
+
+#   Need to do the equivalent of run mysql_secure_installation 
+
+
+    - name: Download and extract the WordPress installation archive
+      unarchive:
+        src: https://wordpress.org/latest.tar.gz
+        dest: ~/
+        remote_src: yes
+        creates: ~/wordpress
+        
+    - name: Copy WordPress files to the web site root folder
+      command: cp -r ~/wordpress/. /var/www/html
+      args:
+        creates: /var/www/html/wp-settings.php
+
+# Need to add
+#   define('FS_METHOD', 'direct');
+# to wp-config.php to allow updates without FTP / SSH
+
+    # change the file owner and permissions for the WordPress files
+    - name: Give "apache" permissions to the WordPress folder
+      file:
+        path: /var/www/html
+        owner: apache
+        group: apache
+        mode: 0755
+        recurse: yes
+      tags: apache-permissions
+        
+    # Tell SElinux to allow writes for WP install
+    # semanage fcontext -a -t httpd_sys_rw_content_t "/var/www/html(/.*)?" 
+    # sudo restorecon -R -v /var/www/html/
+    # /var/www/html/uploads
+    - name: Allow httpd to modify WordPress files for updates
+      sefcontext:
+        target: '/var/www/html(/.*)?'
+        setype: httpd_sys_rw_content_t
+        state: present
+      tags: apache-permissions
+
+    - name: Apply SELinux file context
+      command: restorecon -i -R /var/www/html
+      tags: apache-permissions
+
+...
