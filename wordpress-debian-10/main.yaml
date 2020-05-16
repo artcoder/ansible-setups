@@ -1,0 +1,319 @@
+---
+# To install Wordpress on a low-RAM Debian 10 cloud server
+# from a Debian server running Ansible 2.7
+#
+# This assumes SSH key login, 
+#   so set up SSH login to the remote server before running this playbook.
+#
+# Reads passwords and SSL files from a vault, so make the vault with:
+#   ansible-vault create secret.yml
+# Add the SSL files to the vault using the same password:
+#   ansible-vault encrypt site.key site.crt site.ca-bundle
+#
+# It needs aide-email.cron, make-backups.cron, and reboot-for-updates.cron
+#   in the same folder as this playbook.
+
+# Run this with something like:
+#   ansible-playbook main.yaml --ask-vault-pass
+
+
+########################
+# Begin configuration
+
+# This applies to the Ansible clients in the "wordpress" group.
+# Edit /etc/ansible/hosts to add a "wordpress" group and put your server in it:
+#
+# [wordpress]
+# <target server address>
+# [wordpress:vars]
+# # For the firewalld module:
+# ansible_python_interpreter=/usr/bin/python3
+
+- hosts: wordpress
+
+# The user Ansible will logon to SSH on the clients as
+  remote_user: debian
+  become: yes
+
+  vars_files:
+    - "configure.yaml"
+#    - "secret.yml"
+    
+# Store passwords in the file secret.yml in this format:
+#
+# wordpress_database_user_password: password-here
+    
+# End configuration
+########################
+
+  tasks:
+
+    # Add a swap file so the database can run on a low RAM machine.
+    - import_tasks: swap-file.yaml
+
+
+    - name: Upgrade all packages
+      apt:
+        force_apt_get: yes
+        name: '*'
+        state: latest
+
+    - name: Set the hostname
+      command: hostnamectl set-hostname {{ website_domain_name }}
+
+    - name: Install utility packages
+      apt:
+        name:
+          - nano
+          - mc
+          - net-tools
+          - unzip
+          - bsd-mailx
+          - fail2ban
+          - unattended-upgrades
+          - apt-listchanges
+          - aide
+          - haveged
+          - chrony
+          - postfix
+          - firewalld
+          - man
+        state: latest
+
+    - name: Add an email alias to forward root's email to
+      lineinfile:
+        path: /etc/aliases
+        regexp: '^.?root: .*$'
+        line: 'root: {{ email_to }}'
+        backup: yes
+
+    - name: Apply the email alias
+      command: newaliases
+
+    - name: Enable and start the haveged service for better entropy
+      service:
+       name: haveged
+       enabled: yes
+       state: started
+
+    - name: Define fail2ban jails
+      copy:
+        src: './jail.local'
+        dest: '/etc/fail2ban/jail.local '
+        backup: yes
+        group: root
+        owner: root
+        mode: u+rw,g=r,o=r
+
+    - name: Enable and start the fail2ban service to delay brute force attacks
+      service:
+       name: fail2ban
+       enabled: yes
+       state: restarted
+
+    - name: Enable and start the firewall service
+      service:
+       name: firewalld
+       enabled: yes
+       state: started
+
+    - name: Allow SSH through the local firewall
+      firewalld:
+        service: ssh
+        permanent: yes
+        immediate: yes
+        state: enabled
+
+    - name: Allow Network Time Protocol through the local firewall
+      firewalld:
+        service: ntp
+        permanent: yes
+        immediate: yes
+        state: enabled
+    
+    - name: Enable and start chronyd service
+      service:
+        name: chronyd
+        enabled: yes
+        state: started
+
+#    - name: Set dnf-automatic to download patches
+#      lineinfile:
+#        path: /etc/dnf/automatic.conf
+#        regexp: '^download_updates = .*$'
+#        line: 'download_updates = yes'
+#        backup: yes
+        
+#    - name: Set dnf-automatic to install patches
+#      lineinfile:
+#        path: /etc/dnf/automatic.conf
+#        regexp: '^apply_updates = .*$'
+#       line: 'apply_updates = yes'
+#        backup: yes
+
+#    - name: Enable and start the dnf-automatic.timer service
+#      service:
+#       name: dnf-automatic.timer
+#       enabled: yes
+#       state: started
+
+#    - name: Set dnf-automatic to email messages about patches daily
+#      lineinfile:
+#        path: /etc/dnf/automatic.conf
+#        regexp: '^emit_via = .*$'
+#        line: 'emit_via = email'
+#        backup: yes
+
+#    - name: Set dnf-automatic to send email as the from address
+#      lineinfile:
+#        path: /etc/dnf/automatic.conf
+#        regexp: '^email_from = .*$'
+#        line: 'email_from = {{ email_from }}'
+#        backup: yes
+
+#    - name: Set dnf-automatic to email the to address
+#      lineinfile:
+#        path: /etc/dnf/automatic.conf
+#        regexp: '^email_to = .*$'
+#        line: 'email_to = {{ email_to }}'
+#        backup: yes
+
+    #- name: Set dnf-automatic send email through the smtp host
+    #  lineinfile:
+    #    path: /etc/dnf/automatic.conf
+    #    regexp: '^email_host = .*$'
+    #    line: 'email_host = {{ email_host }}'
+    #    backup: yes
+
+    - name: Add a cron job to reboot daily if needed for patches
+      copy:
+        src: './reboot-for-updates.cron'
+        dest: '/etc/cron.daily/reboot-for-updates.cron'
+        backup: yes
+        group: root
+        owner: root
+        mode: u+rwx,g=rx,o=rx
+
+#    - name: Set the minimum password length
+#      lineinfile:
+#        path: /etc/security/pwquality.conf
+#        regexp: '^minlen = .*$'
+#        line: 'minlen = 12'
+#        backup: yes
+
+#    - name: Set the minimum character classes in password
+#      lineinfile:
+#        path: /etc/security/pwquality.conf
+#        regexp: '^minclass = .*$'
+#        line: 'minclass = 3'
+#        backup: yes
+
+    - name: Initialize the AIDE database - takes about 10 minutes
+      shell: aide --init --config=/etc/aide/aide.conf && mv -n /var/lib/aide/aide.db.new /var/lib/aide/aide.db
+        creates="/var/lib/aide/aide.db"
+
+    - name: Add a cron job to update the AIDE database and email results
+      copy:
+        src: './aide-email.cron'
+        dest: '/etc/cron.daily/aide-email.cron'
+        backup: yes
+        group: root
+        owner: root
+        mode: u+rwx,g=,o=
+
+    - name: Add a cron job to make backups and delete old ones
+      copy:
+        src: './make-backups.cron'
+        dest: '/etc/cron.weekly/make-backups.cron'
+        backup: yes
+        group: root
+        owner: root
+        mode: u+rwx,g=rx,o=rx
+
+
+    # Install HTTPd / Apache
+    - import_tasks: httpd.yaml
+
+    # Install PHP
+    - import_tasks: php.yaml
+    
+    - name: Restart the httpd service to enable PHP
+      service:
+       name: httpd
+       state: restarted
+
+    # Install MariaDB
+    - import_tasks: mariadb.yaml
+
+
+
+    # wordpress setup
+
+    # - name: Set the MySql root user's password
+    #   command: mysqladmin -u root password ""
+    # needs to include the db user password for future runs
+
+    # mysql -u root
+    # mysql> CREATE DATABASE wordpress CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+    - name: Create a database for wordpress
+      mysql_db:
+        name: wordpress
+        collation: COLLATE utf8mb4_general_ci
+        encoding: utf8mb4
+        state: present
+
+    # mysql> CREATE USER wordpress@localhost IDENTIFIED BY "StrongwordpressP@5s";
+    # mysql> mysql> GRANT ALL ON wordpress.* TO wordpress@localhost IDENTIFIED BY "StrongwordpressP@5s";
+    # mysql> FLUSH PRIVILEGES;
+    # mysql> QUIT
+    - name: Create user and set password for wordpress to login to database with
+      mysql_user:
+        name: wordpress
+        state: present
+        priv: wordpress.*:ALL
+        password: "{{ wordpress_database_user_password }}"
+
+
+#   Need to do the equivalent of run mysql_secure_installation 
+
+    - name: Download and extract the WordPress installation archive
+      unarchive:
+        src: https://wordpress.org/latest.tar.gz
+        dest: ~/
+        remote_src: yes
+        creates: ~/wordpress
+        
+    - name: Copy WordPress files to the web site root folder
+      command: cp -r ~/wordpress/. /var/www/html
+      args:
+        creates: /var/www/html/wp-settings.php
+
+    # change the file owner and permissions for the wordpress files
+    - name: Give "apache" permissions to the wordpress folder
+      file:
+        path: /var/www/html
+        owner: apache
+        group: apache
+        mode: 0755
+        recurse: yes
+      tags: apache-permissions
+        
+    # Tell SElinux to allow writes for wordpress install
+    # semanage fcontext -a -t httpd_sys_rw_content_t "/var/www/html(/.*)?" 
+    # sudo restorecon -R -v /var/www/html/
+    # /var/www/html/uploads
+    - name: Allow httpd to modify wordpress files for updates
+      sefcontext:
+        target: '/var/www/html(/.*)?'
+        setype: httpd_sys_rw_content_t
+        state: present
+      tags: apache-permissions
+
+    - name: Apply SELinux file context
+      command: restorecon -i -R /var/www/html
+      tags: apache-permissions
+
+
+
+
+...

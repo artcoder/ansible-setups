@@ -1,0 +1,12 @@
+---
+
+ssl_filename_heading: 'example_com'
+website_domain_name: 'example.com'
+swap_file_path: '/swapfile'
+email_to: 'user@example.com'
+
+# Store the database password in the file secret.yml in this format:
+# 
+# wordpress_database_user_password: password-goes-here
+
+...
