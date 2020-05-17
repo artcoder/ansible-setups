@@ -14,10 +14,12 @@
           - php-mbstring
           - php-gd
           - php-curl
+          - php-mysql
+          - php-bcmath
+          - php-imagick
+          - php-xmlrpc
+          - php-json
+          - php-ssh2
+          - php-posix          
         state: latest
 
-    - name: Enable and start the PHP FastCGI Process Manager service
-      service:
-       name: php-fpm
-       enabled: yes
-       state: started
