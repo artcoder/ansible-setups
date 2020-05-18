@@ -137,53 +137,8 @@
         enabled: yes
         state: started
 
-#    - name: Set dnf-automatic to download patches
-#      lineinfile:
-#        path: /etc/dnf/automatic.conf
-#        regexp: '^download_updates = .*$'
-#        line: 'download_updates = yes'
-#        backup: yes
-        
-#    - name: Set dnf-automatic to install patches
-#      lineinfile:
-#        path: /etc/dnf/automatic.conf
-#        regexp: '^apply_updates = .*$'
-#       line: 'apply_updates = yes'
-#        backup: yes
+# https://wiki.debian.org/UnattendedUpgrades
 
-#    - name: Enable and start the dnf-automatic.timer service
-#      service:
-#       name: dnf-automatic.timer
-#       enabled: yes
-#       state: started
-
-#    - name: Set dnf-automatic to email messages about patches daily
-#      lineinfile:
-#        path: /etc/dnf/automatic.conf
-#        regexp: '^emit_via = .*$'
-#        line: 'emit_via = email'
-#        backup: yes
-
-#    - name: Set dnf-automatic to send email as the from address
-#      lineinfile:
-#        path: /etc/dnf/automatic.conf
-#        regexp: '^email_from = .*$'
-#        line: 'email_from = {{ email_from }}'
-#        backup: yes
-
-#    - name: Set dnf-automatic to email the to address
-#      lineinfile:
-#        path: /etc/dnf/automatic.conf
-#        regexp: '^email_to = .*$'
-#        line: 'email_to = {{ email_to }}'
-#        backup: yes
-
-    #- name: Set dnf-automatic send email through the smtp host
-    #  lineinfile:
-    #    path: /etc/dnf/automatic.conf
-    #    regexp: '^email_host = .*$'
-    #    line: 'email_host = {{ email_host }}'
-    #    backup: yes
 
     - name: Add a cron job to reboot daily if needed for patches
       copy:
@@ -239,7 +194,7 @@
     
     - name: Restart the httpd service to enable PHP
       service:
-       name: httpd
+       name: apache2
        state: restarted
 
     # Install MariaDB
