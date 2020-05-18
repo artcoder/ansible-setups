@@ -6,8 +6,10 @@
       apt:
         name:
           - php
-          - php-cli
+          - libapache2-mod-php
+          - php-mysql
           - php-mysqlnd
+          - php-cli
           - php-json
           - php-opcache
           - php-xml
@@ -16,8 +18,3 @@
           - php-curl
         state: latest
 
-    - name: Enable and start the PHP FastCGI Process Manager service
-      service:
-       name: php-fpm
-       enabled: yes
-       state: started
