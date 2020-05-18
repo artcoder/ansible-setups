@@ -1,7 +1,4 @@
 #!/bin/bash
-
-#Ask dnf if a reboot is needed for package upgrades.
-#Schedule a reboot if needed.
-#Notify all terminals.
-
-dnf needs-restarting || shutdown -r 18:00 "Restarting for patches."
+# Needs the unattended-upgrades package.
+# Schedule a restart if needed for updates.
+/usr/sbin/needrestart -p || /sbin/shutdown -r 18:00 "Restarting for patches."
