@@ -193,7 +193,7 @@
     
     - name: Restart the httpd service to enable PHP
       service:
-       name: httpd
+       name: apache2
        state: restarted
 
     # Install MariaDB
