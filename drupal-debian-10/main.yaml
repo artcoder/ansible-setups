@@ -72,6 +72,8 @@
           - fail2ban
           - unattended-upgrades
           - apt-listchanges
+          - needrestart
+          - libpam-pwquality
           - aide
           - haveged
           - chrony
