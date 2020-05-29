@@ -22,7 +22,6 @@
 
 
 # Future plans:
-# Break out the swap file tasks to a separate file.
 # Break out the httpd / Apache tasks to a separate file
 # Break out the MariaDB / MySQL tasks to a separate file
 # Break out the PHP tasks to a separate file
