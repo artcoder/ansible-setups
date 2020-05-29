@@ -7,6 +7,9 @@
         - apache2
         #- mod_ssl
        state: latest
+       
+# ?copy /etc/apache2/mods-available/ssl.conf and ssl.load to#
+# /etc/apache2/mods-enabled
 
     - name: Copy domain certificate file
       copy:

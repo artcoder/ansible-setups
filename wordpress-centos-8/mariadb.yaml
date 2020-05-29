@@ -5,6 +5,7 @@
       dnf:
        name:
         - mariadb
+        - mariadb-server
        state: latest
 
     - name: Enable and start the MariaDB service
