@@ -1,38 +1,5 @@
 ---
 # To install WordPress on a low-RAM CentOS 8 cloud server using Ansible 2.7
-#
-# This assumes SSH key login, 
-# so set up SSH login to the remote server before running this playbook.
-# You can add this to the ~/.ssh/config file:
-##
-#   Host <remote host nickname>
-#   Hostname <DNS or IP address>
-#   user <remote username for ssh>
-#   identityfile ~/.ssh/<private key file>.pem
-##
-#
-# Reads passwords and SSL files from a vault, so make the vault with:
-#   ansible-vault create secret.yml
-# Add the SSL files to the vault using the same password:
-#   ansible-vault encrypt site.key site.crt site.ca-bundle
-#
-# It needs aide-email.cron, make-backups.cron, and reboot-for-updates.cron
-#   in the same folder as this playbook.
-
-# Run this with something like:
-#   ansible-playbook main.yaml --ask-vault-pass
-
-
-########################
-# Begin configuration
-
-# This applies to the Ansible clients in the "wordpress".
-# Edit /etc/ansible/hosts to add a "wordpress" group and put your servers in it:
-#
-# [wordpress]
-# <target server address / ssh nickname>
-# [wordpress:vars]
-# ansible_python_interpreter=/usr/bin/python3
 
 - hosts: wordpress
 
@@ -40,29 +7,8 @@
   remote_user: centos
   become: yes
 
-  vars: 
-    ssl_filename_heading: 'scrambled_xyz'
-    website_domain_name: 'scrambled.xyz'
-    swap_file_path: '/swapfile'
-
-  vars_prompt:
-    - name: email_to
-      prompt: "Where should notifications be emailed to?"
-      private: no
-      
-  #email_to: 'user@example.com'
-
-  # Create secret.yml to store the database password
-  # secret.yml:
-  ##
-  # wordpress_database_user_password: <password-here>
-  ##
-    
-# End configuration
-########################
-
-
   vars_files:
+    - "configure.yaml"
     - "secret.yml"
     
   tasks:
