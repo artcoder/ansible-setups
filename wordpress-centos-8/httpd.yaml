@@ -35,7 +35,7 @@
         owner: root
         mode: u+rw,g=,o=
 
-# edit /etc/httpd/conf/httpd.conf to add
+# edit /etc/httpd/conf/httpd.conf to add the following to redirect HTTP to HTTPS:
 # 
 #<VirtualHost *:80>
 #   ServerName {{ website_domain_name }}:80
