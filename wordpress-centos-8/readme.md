@@ -57,8 +57,45 @@ Encrypt the SSL files using the same password:
 
 	ansible-vault encrypt <example_com>.key <example_com>.crt <example_com>.ca-bundle
 
+## Edit the configuration file
+
+	cp configure.default.yaml configure.yaml
+
+Edit configure.yaml with your favorite editor.
+
+	nano configure.yaml
+
+
 ## Run it
 
 Run the main Ansible playbook with something like:
 	ansible-playbook main.yaml --ask-vault-pass
+
+## Setup WordPress
+
+In a web browser, go to your domain or the managed machine's IP address:
+
+	http://example.com
+
+In the browser:
+* Pick the language.
+* Leave the database name "wordpress".
+* Enter "wordpress" for the username.
+* Enter the database password that you entered in secret.yml
+* Leave the Database Host as localhost.
+* Leave the Table Prefix "wp_"
+* Click to run the installation
+* Enter the information needed.
+
+
+
+
+
+
+
+
+
+
+
+
 
