@@ -6,7 +6,7 @@
 * example_com.crt
 * example_com.ca-bundle
 
-## Have Ansible installed on a master server:
+## Have Ansible installed on the controller Linux server:
 On CentOS 8:
 
 	sudo dnf install python3 python3-pip
@@ -30,11 +30,11 @@ Test the SSH connection:
 
 ## Configure the Ansible hosts file
 
-Edit /etc/ansible/hosts to add a "wordpress" group, your slave server, and an Ansible variable to tell it where the Python interpreter is. (Python 2 is the default, but CentOS 8 uses Python 3.)
+Edit /etc/ansible/hosts to add a "wordpress" group, your managed server, and an Ansible variable to tell it where the Python interpreter is. (Python 2 is the default, but CentOS 8 uses Python 3.)
 
 ---
 	[wordpress]
-	<ssh nickname / slave server address>
+	<ssh nickname / managed server address>
 	[wordpress:vars]
 	ansible_python_interpreter=/usr/bin/python3
 ---
