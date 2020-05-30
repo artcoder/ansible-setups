@@ -1,6 +1,6 @@
 # To install WordPress on a low-RAM CentOS 8 cloud server using Ansible 2.9
 
-## Have the files for an SSL certificate
+## Have the SSL certificate files
 
 * example_com.key
 * example_com.crt
@@ -10,6 +10,7 @@
 On CentOS 8:
 
 	sudo dnf install python3 python3-pip
+	pip3 install ansible --user
 
 ## Setup SSH key login to the slave server:
 	Add this to the ~/.ssh/config file:
@@ -30,7 +31,7 @@ Test the SSH connection:
 
 ## Configure the Ansible hosts file
 
-Edit /etc/ansible/hosts to add a "wordpress" group, your managed server, and an Ansible variable to tell it where the Python interpreter is. (Python 2 is the default, but CentOS 8 uses Python 3.)
+Edit /etc/ansible/hosts to add a "wordpress" group, your managed server, and an Ansible variable to tell it where the Python interpreter is. (Python 2 is the default for Ansible, but CentOS 8 uses Python 3.)
 
 ---
 	[wordpress]
@@ -60,22 +61,17 @@ Encrypt the SSL files using the same password:
 ## Edit the configuration file
 
 	cp configure.default.yaml configure.yaml
-
-Edit configure.yaml with your favorite editor.
-
 	nano configure.yaml
 
+## Run the playbook
 
-## Run it
-
-Run the main Ansible playbook with something like:
 	ansible-playbook main.yaml --ask-vault-pass
 
 ## Setup WordPress
 
 In a web browser, go to your domain or the managed machine's IP address:
 
-	http://example.com
+	https://example.com
 
 In the browser:
 * Pick the language.
@@ -86,15 +82,6 @@ In the browser:
 * Leave the Table Prefix "wp_"
 * Click to run the installation
 * Enter the information needed.
-
-
-
-
-
-
-
-
-
 
 
 
