@@ -1,8 +1,11 @@
 ---
 
+# Edit these:
 ssl_filename_heading: 'example_com'
 website_domain_name: 'example.com'
-swap_file_path: '/swapfile'
 email_to: 'admin@example.com'
+
+# This is probably OK as is:
+swap_file_path: '/swapfile'
 
 ...
