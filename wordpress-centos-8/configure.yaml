@@ -1,8 +1,0 @@
----
-
-ssl_filename_heading: 'example_com'
-website_domain_name: 'example.com'
-swap_file_path: '/swapfile'
-email_to: 'admin@example.com'
-
-...
