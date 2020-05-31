@@ -1,0 +1,15 @@
+yum update -y
+yum install -y epel-release
+yum install -y yum-utils rpmconf
+needs-restarting -r
+rpmconf -a
+yum install -y dnf
+dnf -y remove yum yum-metadata-parser
+dnf upgrade -y
+dnf install http://mirror.centos.org/centos/8/BaseOS/x86_64/os/Packages/{centos-release-8.1-1.1911.0.8.el8.x86_64.rpm,centos-gpg-keys-8.1-1.1911.0.8.el8.noarch.rpm,centos-repos-8.1-1.1911.0.8.el8.x86_64.rpm}
+dnf upgrade -y epel-release
+rpm -e --nodeps sysvinit-tools
+dnf remove python36-rpmconf-1.0.22-1.el7.noarch
+dnf -y --releasever=8 --allowerasing --setopt=deltarpm=false distro-sync
+dnf -y install kernel-core
+dnf -y groupupdate "Core" "Minimal Install"

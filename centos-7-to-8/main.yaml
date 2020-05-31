@@ -1,0 +1,51 @@
+---
+# To upgrade a low-RAM CentOS 7 cloud server to CentOS 8
+#
+# This assumes SSH key login, so
+# set up SSH login to the remote server before running this playbook.
+#
+
+# Run this with something like:
+#   ansible-playbook main.yaml
+
+
+########################
+# Begin configuration
+
+# Set which hosts get configured.
+# Edit /etc/ansible/hosts to add a "upgrade" group and put your server in it.
+- hosts: upgrade
+
+# The user Ansible will logon to SSH on the target machine as
+  remote_user: centos
+  become: yes
+
+# End configuration
+########################
+
+  vars_files:
+    - "configure.yaml"
+
+  tasks:
+  
+    # Add a swap file so yum / MariaDB can run on a low RAM machine.
+    - name: Start swap file task
+      import_tasks: swap-file.yaml
+
+    - name: Upgrade all packages
+      yum:
+       name: '*'
+       state: latest
+
+    - name: Install epel-release package
+      yum:
+       name: epel-release
+       state: latest
+
+    - name: Install utility packages
+      yum:
+       name:
+        - yum-utils
+       state: latest
+
+...
