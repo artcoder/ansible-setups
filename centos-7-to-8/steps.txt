@@ -1,7 +1,13 @@
-yum update -y
-yum install -y epel-release
-yum install -y yum-utils rpmconf
+# https://www.centlinux.com/2020/01/how-to-upgrade-centos-7-to-8-server.html#comment-form
+# https://www.hostwinds.com/guide/upgrading-from-centos-7-to-8/
+
+
+# yum update -y
+# yum install -y epel-release
+# yum install -y yum-utils rpmconf
 needs-restarting -r
+# If a reboot is needed:
+systemctl reboot
 rpmconf -a
 yum install -y dnf
 dnf -y remove yum yum-metadata-parser
