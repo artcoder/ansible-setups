@@ -1,5 +1,17 @@
 #!/bin/bash
 
-mysql -u root wordpress < [filename].sql
-# reset workpress user's password in mysql and /var/www/html/wp-config.php
-tar -xzvf backup-file.tgz -C /
+mysqladmin -u root drop wordpress
+mysqladmin -u root create wordpress
+
+mysql -u root wordpress < backup-hostname-date-wordpress.sql
+
+# reset workpress user's password in mysql and 
+# mysql -u root -h localhost
+# ALTER USER 'wordpress'@'localhost' IDENTIFIED BY 'New-Password-Here';
+# EXIT
+
+# Edit /var/www/html/wp-config.php to use the new database password
+# /** MySQL database password */
+# define( 'DB_PASSWORD', 'New-Password-Here' );
+
+sudo tar -xzvf backup-hostname-date-www.tgz -C /
