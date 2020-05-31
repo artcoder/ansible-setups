@@ -46,6 +46,7 @@
       yum:
        name:
         - yum-utils
+        - rpmconf
        state: latest
 
 ...
