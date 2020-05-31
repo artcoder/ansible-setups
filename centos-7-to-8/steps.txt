@@ -1,20 +1,31 @@
 # https://www.centlinux.com/2020/01/how-to-upgrade-centos-7-to-8-server.html#comment-form
 # https://www.hostwinds.com/guide/upgrading-from-centos-7-to-8/
+# https://www.joe0.com/2020/04/09/how-to-easily-upgrade-from-centos-7-to-centos-8-1-x/
 
+# Create a swap file if the RAM is low
 
+sudo su
 # yum update -y
 # yum install -y epel-release
 # yum install -y yum-utils rpmconf
 needs-restarting -r
 # If a reboot is needed:
 systemctl reboot
+sudo su
 rpmconf -a
+package-cleanup --leaves
+package-cleanup --orphans
 yum install -y dnf
+yum clean all
 dnf -y remove yum yum-metadata-parser
 dnf upgrade -y
 dnf install http://mirror.centos.org/centos/8/BaseOS/x86_64/os/Packages/{centos-release-8.1-1.1911.0.8.el8.x86_64.rpm,centos-gpg-keys-8.1-1.1911.0.8.el8.noarch.rpm,centos-repos-8.1-1.1911.0.8.el8.x86_64.rpm}
 dnf upgrade -y epel-release
+dnf -y upgrade https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+dnf clean all
+rpm -e `rpm -q kernel`
 rpm -e --nodeps sysvinit-tools
+dnf -y --releasever=8 --allowerasing --setopt=deltarpm=false distro-sync
 dnf remove python36-rpmconf-1.0.22-1.el7.noarch
 dnf -y --releasever=8 --allowerasing --setopt=deltarpm=false distro-sync
 dnf -y install kernel-core
