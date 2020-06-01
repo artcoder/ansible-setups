@@ -4,4 +4,4 @@
 #Schedule a reboot if needed.
 #Notify all terminals.
 
-dnf needs-restarting || shutdown -r 18:00 "Restarting for patches."
+dnf needs-restarting -r  || shutdown -r 18:00 "Restarting for patches."
