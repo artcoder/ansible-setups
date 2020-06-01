@@ -101,7 +101,7 @@
     - name: Define fail2ban jails
       copy:
         src: './jail.local'
-        dest: '/etc/fail2ban/jail.local '
+        dest: '/etc/fail2ban/jail.local'
         backup: yes
         group: root
         owner: root
