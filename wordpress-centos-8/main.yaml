@@ -75,6 +75,18 @@
     - name: Apply the email alias
       command: newaliases
 
+# Accept email connections from all network interfaces
+# /etc/postfix/main.cf
+# uncomment: inet_interfaces = all
+# comment out inet_interfaces = localhost
+#
+# Accept email sent to main.$mydomain
+# uncomment: mydestination = $myhostname, localhost.$mydomain, localhost, $mydomain, mail.$mydomain, www.$mydomain, ftp.$mydom
+# comment out: mydestination = $myhostname, localhost.$mydomain, localhost
+
+
+
+
     - name: Enable and start the haveged service for better entropy
       service:
        name: haveged
