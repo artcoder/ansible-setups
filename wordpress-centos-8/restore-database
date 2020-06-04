@@ -10,8 +10,9 @@ mysql -u root wordpress < backup-hostname-date-wordpress.sql
 # ALTER USER 'wordpress'@'localhost' IDENTIFIED BY 'New-Password-Here';
 # EXIT
 
+sudo tar -xzvf backup-hostname-date-www.tgz -C /
+
 # Edit /var/www/html/wp-config.php to use the new database password
 # /** MySQL database password */
 # define( 'DB_PASSWORD', 'New-Password-Here' );
 
-sudo tar -xzvf backup-hostname-date-www.tgz -C /
