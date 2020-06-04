@@ -83,10 +83,17 @@
 # Accept email sent to main.$mydomain
 # uncomment: mydestination = $myhostname, localhost.$mydomain, localhost, $mydomain, mail.$mydomain, www.$mydomain, ftp.$mydom
 # comment out: mydestination = $myhostname, localhost.$mydomain, localhost
+# uncomment:
+# mynetworks_style = host
+# get Postfix to use the certificate for secure email xfers
 
-
-
-
+    - name: Allow incoming SMTP through the local firewall
+      firewalld:
+        service: smtp
+        permanent: yes
+        immediate: yes
+        state: enabled
+        
     - name: Enable and start the haveged service for better entropy
       service:
        name: haveged
