@@ -65,6 +65,12 @@
           - postfix
         state: latest
 
+# to fix "nothing provides module(perl:5.26)"
+    - name: Enable perl:5.26 dnf module
+      shell:
+        cmd: dnf module enable -y perl:5.26
+
+
     - name: Add an email alias to forward root's email to
       lineinfile:
         path: /etc/aliases
