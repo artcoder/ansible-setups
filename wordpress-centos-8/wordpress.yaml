@@ -23,13 +23,12 @@
         priv: wordpress.*:ALL
         password: "{{ wordpress_database_user_password }}"
 
-# /var/www/html/wp-config.php
-    - name: Set the database user password in Wordpress
-      lineinfile:
-        path: /var/www/html/wp-config.php
-        regexp: "^define( 'DB_PASSWORD', '*$"
-        line: "define( 'DB_PASSWORD', '{{ wordpress_database_user_password }}' );"
-        backup: yes
+#    - name: Set the database user password in Wordpress
+#      lineinfile:
+#        path: /var/www/html/wp-config.php
+#        regexp: "^define( 'DB_PASSWORD', '*$"
+#        line: "define( 'DB_PASSWORD', '{{ wordpress_database_user_password }}' );"
+#        backup: yes
 
 #   Need to do the equivalent of run mysql_secure_installation 
 
