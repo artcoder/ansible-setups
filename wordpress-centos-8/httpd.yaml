@@ -118,5 +118,12 @@
         permanent: yes
         immediate: yes
         state: enabled
+# in
+# <Directory "/var/www/html">
+# Change 
+# AllowOverride None
+# to
+# AllowOverride All
+
 
 ...
