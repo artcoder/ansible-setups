@@ -1,8 +1,9 @@
-If the cloud service does not have Debian 10 available, upgrade from Debian 9:
+If the cloud service does not have Debian 10 available, upgrade from Debian 9 to 10:
 
 sudo apt update
 sudo apt upgrade
 sudo reboot
+
 edit /etc/apt/sources.list to be something like:
 
 deb http://deb.debian.org/debian buster main
@@ -11,6 +12,8 @@ deb http://deb.debian.org/debian-security/ buster/updates main
 deb-src http://deb.debian.org/debian-security/ buster/updates main
 deb http://deb.debian.org/debian buster-updates main
 deb-src http://deb.debian.org/debian buster-updates main
+
+or edit /etc/apt/sources.list to replace "stretch" with "buster".
 
 sudo apt update
 sudo apt upgrade
