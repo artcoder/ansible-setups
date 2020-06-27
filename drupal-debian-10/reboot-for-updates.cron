@@ -1,4 +1,4 @@
 #!/bin/bash
-# Needs the unattended-upgrades package.
+# Needs the unattended-upgrades, needrestart packages.
 # Schedule a restart if needed for updates.
 /usr/sbin/needrestart -p || /sbin/shutdown -r 18:00 "Restarting for patches."
