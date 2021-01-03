@@ -118,7 +118,6 @@
        enabled: yes
        state: restarted
 
-    #switch to ufw
     - name: Enable and start the uncomplicated firewall service
       service:
        name: ufw
@@ -127,11 +126,9 @@
 
     #switch to ufw
     - name: Allow Network Time Protocol through the local firewall
-      firewalld:
-        service: ntp
-        permanent: yes
-        immediate: yes
-        state: enabled
+      ufw:
+        rule: allow
+        name: ntp
     
     - name: Enable and start chronyd service
       service:
