@@ -128,7 +128,8 @@
     - name: Allow Network Time Protocol through the local firewall
       ufw:
         rule: allow
-        name: ntp
+        proto: udp
+        port: '123'
     
     - name: Enable and start chronyd service
       service:
