@@ -113,12 +113,13 @@
        enabled: yes
        state: restarted
 
+    #switch to ufw
     - name: Enable and start the firewall service
       service:
        name: firewalld
        enabled: yes
        state: started
-
+    #switch to ufw
     - name: Allow SSH through the local firewall
       firewalld:
         service: ssh
@@ -126,6 +127,7 @@
         immediate: yes
         state: enabled
 
+    #switch to ufw
     - name: Allow Network Time Protocol through the local firewall
       firewalld:
         service: ntp
