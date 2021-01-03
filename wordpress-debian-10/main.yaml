@@ -32,7 +32,7 @@
 - hosts: wordpress
 
 # The user Ansible will logon to SSH on the clients as
-  remote_user: debian
+  remote_user: root
   become: yes
 
   vars_files:
@@ -46,10 +46,14 @@
 # End configuration
 ########################
 
-  tasks:
+  handlers:
+    - name: restart apache
+      service: name=apache2 state=restarted
 
+  tasks:
+        
     # Add a swap file so the database can run on a low RAM machine.
-    - import_tasks: swap-file.yaml
+    # - import_tasks: swap-file.yaml
 
 
     - name: Upgrade all packages
@@ -78,7 +82,8 @@
           - haveged
           - chrony
           - postfix
-          - firewalld
+          #- firewalld
+          - ufw
           - man
         state: latest
 
@@ -114,18 +119,11 @@
        state: restarted
 
     #switch to ufw
-    - name: Enable and start the firewall service
+    - name: Enable and start the uncomplicated firewall service
       service:
-       name: firewalld
+       name: ufw
        enabled: yes
        state: started
-    #switch to ufw
-    - name: Allow SSH through the local firewall
-      firewalld:
-        service: ssh
-        permanent: yes
-        immediate: yes
-        state: enabled
 
     #switch to ufw
     - name: Allow Network Time Protocol through the local firewall
