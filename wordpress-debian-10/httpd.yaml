@@ -18,7 +18,7 @@
     - name: Copy domain certificate file
       copy:
         src: "./{{ ssl_filename_heading }}.crt"
-        dest: "/etc/pki/tls/certs/"
+        dest: "/etc/ssl/certs/"
         backup: yes
         group: root
         owner: root
@@ -27,7 +27,7 @@
     - name: Copy certificate authority bundle file
       copy:
         src: "./{{ ssl_filename_heading }}.ca-bundle"
-        dest: "/etc/pki/tls/certs/"
+        dest: "/etc/ssl/certs/"
         backup: yes
         group: root
         owner: root
@@ -36,7 +36,7 @@
     - name: Copy private key file
       copy:
         src: "./{{ ssl_filename_heading }}.key"
-        dest: "/etc/pki/tls/private/"
+        dest: "/etc/ssl/private/"
         backup: yes
         group: root
         owner: root
