@@ -2,8 +2,8 @@
 	<VirtualHost _default_:443>
 		ServerAdmin webmaster@localhost
 
-		ServerName {{ domain }}
-		ServerAlias www.{{ domain }}
+		ServerName {{ website_domain_name }}
+		ServerAlias www.{{ website_domain_name }}
 
 		DocumentRoot {{ wordpress_core_path }}/{{ domain }}
 
@@ -32,8 +32,11 @@
 		#   /usr/share/doc/apache2/README.Debian.gz for more info.
 		#   If both key and certificate are stored in the same file, only the
 		#   SSLCertificateFile directive is needed.
-		SSLCertificateFile	/etc/ssl/certs/ssl-cert-snakeoil.pem
-		SSLCertificateKeyFile /etc/ssl/private/ssl-cert-snakeoil.key
+		#SSLCertificateFile	/etc/ssl/certs/ssl-cert-snakeoil.pem
+		SSLCertificateFile	/etc/ssl/certs/{{ ssl_filename_heading }}.crt
+		
+		#SSLCertificateKeyFile /etc/ssl/private/ssl-cert-snakeoil.key
+		SSLCertificateKeyFile /etc/ssl/private/{{ ssl_filename_heading }}.key
 
 		#   Server Certificate Chain:
 		#   Point SSLCertificateChainFile at a file containing the
@@ -41,7 +44,7 @@
 		#   certificate chain for the server certificate. Alternatively
 		#   the referenced file can be the same as SSLCertificateFile
 		#   when the CA certificates are directly appended to the server
-		#   certificate for convinience.
+		#   certificate for convenience.
 		#SSLCertificateChainFile /etc/apache2/ssl.crt/server-ca.crt
 
 		#   Certificate Authority (CA):
@@ -52,7 +55,7 @@
 		#		 to point to the certificate files. Use the provided
 		#		 Makefile to update the hash symlinks after changes.
 		#SSLCACertificatePath /etc/ssl/certs/
-		#SSLCACertificateFile /etc/apache2/ssl.crt/ca-bundle.crt
+		SSLCACertificateFile /etc/apache2/ssl.crt/{{ ssl_filename_heading }}.ca-bundle
 
 		#   Certificate Revocation Lists (CRL):
 		#   Set the CA revocation path where to find CA CRLs for client
@@ -72,10 +75,21 @@
 		#SSLVerifyClient require
 		#SSLVerifyDepth  10
 
+		# enable HTTP/2, if available
+		Protocols h2 http/1.1
+		
+		SSLProtocol all -SSLv2 -SSLv3 -TLSv1 -TLSv1.1
+		
+		SSLCipherSuite ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256
+		
+		SSLCompression off
+		
+		SSLSessionTickets off
+		
 		#   SSL Engine Options:
 		#   Set various options for the SSL engine.
 		#   o FakeBasicAuth:
-		#	 Translate the client X.509 into a Basic Authorisation.  This means that
+		#	 Translate the client X.509 into a Basic Authorization.  This means that
 		#	 the standard Auth/DBMAuth methods can be used for access control.  The
 		#	 user name is the `one line' version of the client's X.509 certificate.
 		#	 Note that no password is obtained from the user. Every entry in the user
