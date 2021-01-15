@@ -74,7 +74,7 @@
     - name: Add an Apache httpd virtualhost for Wordpress.
       template:
         src: "ssl-site.conf.j2"
-        dest: "/etc/apache2/sites-available/{{ domain }}.conf"
+        dest: "/etc/apache2/sites-available/{{ website_domain_name }}.conf"
         owner: root
         group: root
         mode: 0644
@@ -82,8 +82,8 @@
       
     - name: Enable the site.
       command: >
-        a2ensite {{ domain }}
-        creates=/etc/apache2/sites-enabled/{{ domain }}.conf
+        a2ensite {{ website_domain_name }}
+        creates=/etc/apache2/sites-enabled/{{ website_domain_name }}.conf
       notify: restart apache
 
     - name: Disable the default site.
