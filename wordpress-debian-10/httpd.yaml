@@ -52,7 +52,7 @@
 
     - name: Enable and start the httpd service
       service:
-       name: httpd
+       name: apache2
        enabled: yes
        state: started
 
