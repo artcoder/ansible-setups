@@ -17,6 +17,7 @@
       apt:
        name:
         - python3-pip
+        - python3-setuptools
        state: latest
        
     - name: Install the MySQL library for Python 3 using PIP, so Ansible can work on the database
