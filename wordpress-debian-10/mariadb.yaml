@@ -22,7 +22,8 @@
        
     - name: Install the MySQL library for Python 3 using PIP, so Ansible can work on the database
       pip:
-        name: PyMySQL
+        #name: PyMySQL
+        name: MySQL-python
 
 # mysql_secure_installation
 
