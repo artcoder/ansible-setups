@@ -5,7 +5,7 @@
 		ServerName {{ website_domain_name }}
 		ServerAlias www.{{ website_domain_name }}
 
-		DocumentRoot {{ wordpress_core_path }}/{{ domain }}
+		DocumentRoot /var/www/{{ website_domain_name }}
 
 		# Available loglevels: trace8, ..., trace1, debug, info, notice, warn,
 		# error, crit, alert, emerg.
