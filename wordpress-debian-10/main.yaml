@@ -213,7 +213,7 @@
         name: wordpress
         login_unix_socket: "/var/run/mysqld/mysqld.sock"
         login_host: ""
-        collation: COLLATE utf8mb4_general_ci
+        #collation: COLLATE utf8mb4_general_ci
         #encoding: utf8mb4
         state: present
 
