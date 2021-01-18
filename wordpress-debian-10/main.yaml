@@ -37,7 +37,7 @@
 
   vars_files:
     - "configure.yaml"
-#    - "secret.yml"
+    - "secret.yml"
     
 # Store passwords in the file secret.yml in this format:
 #
