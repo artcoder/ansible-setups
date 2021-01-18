@@ -6,6 +6,8 @@
        name:
         - mariadb-server
         - python3-mysqldb
+        #?
+        - libmariadb-dev
        state: latest
 
     - name: Enable and start the MariaDB service
