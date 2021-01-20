@@ -254,19 +254,21 @@
         group: www-data
         mode: 0755
         recurse: yes
-        
+    
+    #SELinux is disabled by default on Debian https://wiki.debian.org/SELinux
+    
     # Tell SElinux to allow writes for wordpress install
     # semanage fcontext -a -t httpd_sys_rw_content_t "/var/www/html(/.*)?" 
     # sudo restorecon -R -v /var/www/html/
     # /var/www/html/uploads
-    - name: Allow httpd to modify wordpress files for updates
-      sefcontext:
-        target: '/var/www/html(/.*)?'
-        setype: httpd_sys_rw_content_t
-        state: present
+    #- name: Allow httpd to modify wordpress files for updates
+    #  sefcontext:
+    #    target: '/var/www/html(/.*)?'
+    #    setype: httpd_sys_rw_content_t
+    #    state: present
 
-    - name: Apply SELinux file context
-      command: restorecon -i -R /var/www/html
+    #- name: Apply SELinux file context
+    #  command: restorecon -i -R /var/www/html
 
 
 
