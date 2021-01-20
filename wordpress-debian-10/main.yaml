@@ -211,11 +211,12 @@
     - name: Create a database for Wordpress
       mysql_db:
         name: wordpress
-        login_unix_socket: "/var/run/mysqld/mysqld.sock"
-        login_host: ""
         #collation: COLLATE utf8mb4_general_ci
         #encoding: utf8mb4
         state: present
+        login_unix_socket: "/var/run/mysqld/mysqld.sock"
+        login_host: ""
+        
 
     # mysql> CREATE USER wordpress@localhost IDENTIFIED BY "StrongwordpressP@5s";
     # mysql> mysql> GRANT ALL ON wordpress.* TO wordpress@localhost IDENTIFIED BY "StrongwordpressP@5s";
@@ -227,6 +228,8 @@
         state: present
         priv: wordpress.*:ALL
         password: "{{ wordpress_database_user_password }}"
+        login_unix_socket: "/var/run/mysqld/mysqld.sock"
+        login_host: ""
 
 
 #   Need to do the equivalent of run mysql_secure_installation 
