@@ -7,7 +7,12 @@
         - apache2
         #- mod_ssl
        state: latest
-       
+
+    - name: Create the document root directory
+      file:
+        path: /var/www/{{ website_domain_name }}/html
+        state: directory
+
     - name: Enable Apache rewrite module
       apache2_module: name=rewrite state=present
       notify: restart apache
@@ -74,13 +79,6 @@
 #        permanent: yes
 #        immediate: yes
 #        state: enabled
-
-
-    - name: Create the document root directory
-      file:
-        path: /var/www/{{ website_domain_name }}/html
-        state: directory
-
 
     - name: Add an Apache httpd virtualhost for Wordpress.
       template:
