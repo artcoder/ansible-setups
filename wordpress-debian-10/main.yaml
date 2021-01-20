@@ -222,6 +222,10 @@
     # mysql> mysql> GRANT ALL ON wordpress.* TO wordpress@localhost IDENTIFIED BY "StrongwordpressP@5s";
     # mysql> FLUSH PRIVILEGES;
     # mysql> QUIT
+    
+    # Ansible 2.7.7 on Debian 10 has a bug that prevents the below from working.
+    # It's fixed in Ansible 2.9.17 an Ubuntu PPA
+    # https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html#installing-ansible-on-debian
     - name: Create user and set password for wordpress to login to database with
       mysql_user:
         name: wordpress

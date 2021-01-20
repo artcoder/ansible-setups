@@ -12,6 +12,10 @@
       apache2_module: name=rewrite state=present
       notify: restart apache
       
+    - name: Enable Apache SSL module
+      apache2_module: name=ssl state=present
+      notify: restart apache
+      
 # ?copy /etc/apache2/mods-available/ssl.conf and ssl.load to#
 # /etc/apache2/mods-enabled
 
