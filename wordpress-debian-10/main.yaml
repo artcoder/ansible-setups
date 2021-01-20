@@ -247,14 +247,13 @@
         creates: /var/www/html/wp-settings.php
 
     # change the file owner and permissions for the wordpress files
-    - name: Give "apache" permissions to the wordpress folder
+    - name: Give "www-data" permissions to the wordpress folder
       file:
         path: /var/www/html
-        owner: apache
-        group: apache
+        owner: www-data
+        group: www-data
         mode: 0755
         recurse: yes
-      tags: apache-permissions
         
     # Tell SElinux to allow writes for wordpress install
     # semanage fcontext -a -t httpd_sys_rw_content_t "/var/www/html(/.*)?" 
@@ -265,12 +264,9 @@
         target: '/var/www/html(/.*)?'
         setype: httpd_sys_rw_content_t
         state: present
-      tags: apache-permissions
 
     - name: Apply SELinux file context
       command: restorecon -i -R /var/www/html
-      tags: apache-permissions
-
 
 
 
