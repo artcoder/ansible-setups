@@ -75,6 +75,13 @@
 #        immediate: yes
 #        state: enabled
 
+
+    - name: Create the document root directory
+      file:
+        path: /var/www/{{ website_domain_name }}/html
+        state: directory
+
+
     - name: Add an Apache httpd virtualhost for Wordpress.
       template:
         src: "ssl-site.conf.j2"
