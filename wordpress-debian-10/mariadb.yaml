@@ -18,17 +18,6 @@
        enabled: yes
        state: started
 
-#    - name: Install Python 3 PIP
-#      apt:
-#       name:
-#        - python3-pip
-#        - python3-setuptools
-#       state: latest
-       
-#    - name: Install the MySQL library for Python 3 using PIP, so Ansible can work on the database
-#      pip:
-#        name: PyMySQL
-
 # mysql_secure_installation
 
 ...
