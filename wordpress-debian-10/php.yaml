@@ -16,5 +16,8 @@
           - php-mbstring
           - php-gd
           - php-curl
+          - php-imagick
+          - php-zip
         state: latest
+        notify: restart apache
 

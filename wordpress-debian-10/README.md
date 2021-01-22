@@ -12,10 +12,13 @@ Encrypt the secret.yml file, HTTPS certificate, secret key, and CA certificate w
 	ansible-vault create secret.yml
 	ansible-vault encrypt site.key site.crt site.ca-bundle
 
-On the source server, edit /etc/ansible/hosts to add a "wordpress" group and put your server in it:
+On the source server, edit /etc/ansible/hosts to add a "wordpress" group and put your server in it. Add an Ansible variable to tell it to use Python 3:
 
 	[wordpress]
 	<target server address>
+	[wordpress:vars]
+	ansible_python_interpreter=/usr/bin/python3
+
 	
 Run the main playbook:
 

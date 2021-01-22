@@ -26,7 +26,6 @@
 # [wordpress]
 # <target server address>
 # [wordpress:vars]
-# # For the firewalld module:
 # ansible_python_interpreter=/usr/bin/python3
 
 - hosts: wordpress
