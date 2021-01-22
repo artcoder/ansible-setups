@@ -19,5 +19,5 @@
           - php-imagick
           - php-zip
         state: latest
-        notify: restart apache
+
 
