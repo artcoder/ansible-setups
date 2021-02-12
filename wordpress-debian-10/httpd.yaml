@@ -65,20 +65,15 @@
        enabled: yes
        state: started
 
-# switch to UFW
-#    - name: Allow HTTP through the local firewall
-#      firewalld:
-#        service: http
-#        permanent: yes
-#        immediate: yes
-#        state: enabled
-
-#    - name: Allow HTTPS through the local firewall
-#      firewalld:
-#        service: https
-#        permanent: yes
-#        immediate: yes
-#        state: enabled
+#    - name: Allow SSH through the local firewall
+#      ufw:
+#        rule: allow
+#        name: OpenSSH
+#
+#    - name: Allow HTTP / HTTPS through the local firewall
+#      ufw:
+#        rule: allow
+#        name: "WWW Full"
 
     - name: Add an Apache httpd virtualhost for Wordpress.
       template:
