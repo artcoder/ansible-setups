@@ -1,4 +1,5 @@
 #!/bin/bash
+set -u
 
 #user:full, group: read, others: none
 umask 037
@@ -11,9 +12,9 @@ backup_folder="/var/spool/backup/"
 # Give the wheel group permission to the backup folder and below
 chgrp -R wheel $backup_folder
 
-tar  -cpzf /var/spool/backup/backup-$(hostname -s)-$(date +"%Y-%m-%d_%H%M%S")-etc.tgz /etc
+tar  -cpzf /var/spool/backup/backup-$(hostname -s)-$(date +"%Y-%m-%d_%H%M%S")-etc.tgz --exclude='/etc/shadow*' --exclude='/etc/gshadow*' /etc
 tar  -cpzf /var/spool/backup/backup-$(hostname -s)-$(date +"%Y-%m-%d_%H%M%S")-home.tgz /home
-tar  -cpzf /var/spool/backup/backup-$(hostname -s)-$(date +"%Y-%m-%d_%H%M%S")-logs.tgz /var/log
+tar  -cpzf /var/spool/backup/backup-$(hostname -s)-$(date +"%Y-%m-%d_%H%M%S")-logs.tgz --exclude='/var/log/lastlog' /var/log
 tar  -cpzf /var/spool/backup/backup-$(hostname -s)-$(date +"%Y-%m-%d_%H%M%S")-www.tgz /var/www
 
 mysqldump wordpress > /var/spool/backup/backup-$(hostname -s)-$(date +"%Y-%m-%d_%H%M%S")-wordpress.sql
