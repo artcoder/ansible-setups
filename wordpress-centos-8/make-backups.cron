@@ -12,6 +12,10 @@ backup_folder="/var/spool/backup/"
 # Give the wheel group permission to the backup folder and below
 chgrp -R wheel "$backup_folder"
 
+# set the group sticky bit for the directory, so new files give permission to the group
+chmod g+s "$backup_folder"
+
+# to do: use "$backup_folder" below, instead of repeating the path
 tar  -cpzf /var/spool/backup/backup-$(hostname -s)-$(date +"%Y-%m-%d_%H%M%S")-etc.tgz --exclude='/etc/shadow*' --exclude='/etc/gshadow*' /etc
 tar  -cpzf /var/spool/backup/backup-$(hostname -s)-$(date +"%Y-%m-%d_%H%M%S")-home.tgz /home
 tar  -cpzf /var/spool/backup/backup-$(hostname -s)-$(date +"%Y-%m-%d_%H%M%S")-logs.tgz --exclude='/var/log/lastlog' /var/log
