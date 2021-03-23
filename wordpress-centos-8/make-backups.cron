@@ -10,7 +10,7 @@ backup_folder="/var/spool/backup/"
 [ ! -d "$backup_folder" ] && mkdir -p "$backup_folder"
 
 # Give the wheel group permission to the backup folder and below
-chgrp -R wheel $backup_folder
+chgrp -R wheel "$backup_folder"
 
 tar  -cpzf /var/spool/backup/backup-$(hostname -s)-$(date +"%Y-%m-%d_%H%M%S")-etc.tgz --exclude='/etc/shadow*' --exclude='/etc/gshadow*' /etc
 tar  -cpzf /var/spool/backup/backup-$(hostname -s)-$(date +"%Y-%m-%d_%H%M%S")-home.tgz /home
