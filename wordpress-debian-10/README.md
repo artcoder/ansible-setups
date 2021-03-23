@@ -19,7 +19,8 @@ On the source server, edit /etc/ansible/hosts to add a "wordpress" group and put
 	[wordpress:vars]
 	ansible_python_interpreter=/usr/bin/python3
 
-	
+Setup an SSH connection from the source server to the destination server.
+
 Run the main playbook:
 
 	ansible-playbook main.yaml --ask-vault-pass
