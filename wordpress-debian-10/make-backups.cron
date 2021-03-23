@@ -1,13 +1,24 @@
 #!/bin/bash
+set -u
 
 #user:full, group: read, others: none
 umask 037
 
-# Need to create /var/spool/backup if it doesn't exist
+backup_folder="/var/spool/backup/"
 
-tar  -cpzf /var/spool/backup/backup-$(hostname -s)-$(date +"%Y-%m-%d_%H%M%S")-etc.tgz /etc
+# Create the backup folder if it doesn't exist
+[ ! -d "$backup_folder" ] && mkdir -p "$backup_folder"
+
+# Give the wheel group permission to the backup folder and below
+chgrp -R wheel "$backup_folder"
+
+# set the group sticky bit for the directory, so new files give permission to the group
+chmod g+s "$backup_folder"
+
+# to do: use "$backup_folder" below, instead of repeating the path. Add sparse file checking.
+tar  -cpzf /var/spool/backup/backup-$(hostname -s)-$(date +"%Y-%m-%d_%H%M%S")-etc.tgz --exclude='/etc/shadow*' --exclude='/etc/gshadow*' /etc
 tar  -cpzf /var/spool/backup/backup-$(hostname -s)-$(date +"%Y-%m-%d_%H%M%S")-home.tgz /home
-tar  -cpzf /var/spool/backup/backup-$(hostname -s)-$(date +"%Y-%m-%d_%H%M%S")-logs.tgz /var/log
+tar  -cpzf /var/spool/backup/backup-$(hostname -s)-$(date +"%Y-%m-%d_%H%M%S")-logs.tgz --exclude='/var/log/lastlog' /var/log
 tar  -cpzf /var/spool/backup/backup-$(hostname -s)-$(date +"%Y-%m-%d_%H%M%S")-www.tgz /var/www
 
 mysqldump wordpress > /var/spool/backup/backup-$(hostname -s)-$(date +"%Y-%m-%d_%H%M%S")-wordpress.sql
