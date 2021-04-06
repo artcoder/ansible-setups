@@ -244,15 +244,27 @@
       args:
         creates: /var/www/{{ website_domain_name }}/html/wp-settings.php
 
-    # change the file owner and permissions for the wordpress files
+    # change the directory owner and permissions for the Wordpress directories
     - name: Give "www-data" permissions to the wordpress folder
       file:
         path: /var/www/{{ website_domain_name }}/html
         owner: www-data
         group: www-data
-        mode: 0755
+        mode: 0750
         recurse: yes
+        state: directory
     
+     # change the file owner and permissions for the Wordpress files
+    - name: Give "www-data" permissions to the wordpress folder
+      file:
+        path: /var/www/{{ website_domain_name }}/html
+        owner: www-data
+        group: www-data
+        mode: 0640
+        recurse: yes
+        state: file
+
+
     #SELinux is disabled by default on Debian https://wiki.debian.org/SELinux
     
     # Tell SElinux to allow writes for wordpress install

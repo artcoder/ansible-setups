@@ -448,6 +448,7 @@
         owner: apache
         group: apache
         mode: 0755
+        #To do: change to 0750 for directories, 0640 for files
         recurse: yes
       tags: apache-permissions
         
