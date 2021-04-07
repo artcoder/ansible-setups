@@ -12,7 +12,7 @@ backup_folder="/var/spool/backup/"
 # Give the wheel group permission to the backup folder and below
 chgrp -R wheel "$backup_folder"
 
-# set the group sticky bit for the directory, so new files give permission to the group
+# Set the group sticky bit for the directory, so new files give permission to the group
 chmod g+s "$backup_folder"
 
 # to do: use "$backup_folder" below, instead of repeating the path. Add sparse file checking.
