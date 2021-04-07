@@ -33,11 +33,11 @@
 		#   /usr/share/doc/apache2/README.Debian.gz for more info.
 		#   If both key and certificate are stored in the same file, only the
 		#   SSLCertificateFile directive is needed.
-		SSLCertificateFile	/etc/ssl/certs/ssl-cert-snakeoil.pem
-	##SSLCertificateFile	/etc/ssl/certs/{{ ssl_filename_heading }}.crt
+		#SSLCertificateFile	/etc/ssl/certs/ssl-cert-snakeoil.pem
+	SSLCertificateFile	/etc/ssl/certs/{{ ssl_filename_heading }}.crt
 		
-		SSLCertificateKeyFile /etc/ssl/private/ssl-cert-snakeoil.key
-	##SSLCertificateKeyFile /etc/ssl/private/{{ ssl_filename_heading }}.key
+		#SSLCertificateKeyFile /etc/ssl/private/ssl-cert-snakeoil.key
+	SSLCertificateKeyFile /etc/ssl/private/{{ ssl_filename_heading }}.key
 
 		#   Server Certificate Chain:
 		#   Point SSLCertificateChainFile at a file containing the
@@ -56,7 +56,7 @@
 		#		 to point to the certificate files. Use the provided
 		#		 Makefile to update the hash symlinks after changes.
 		#SSLCACertificatePath /etc/ssl/certs/
-	##SSLCACertificateFile /etc/apache2/ssl.crt/{{ ssl_filename_heading }}.ca-bundle
+	SSLCACertificateFile /etc/apache2/ssl.crt/{{ ssl_filename_heading }}.ca-bundle
 
 		#   Certificate Revocation Lists (CRL):
 		#   Set the CA revocation path where to find CA CRLs for client
