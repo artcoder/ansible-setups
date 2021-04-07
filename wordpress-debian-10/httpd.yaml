@@ -6,7 +6,7 @@
        name: 
         - apache2
         #- mod_ssl
-       state: latest
+       state: present
 
     - name: Create the document root directory
       file:
@@ -21,9 +21,6 @@
       apache2_module: name=ssl state=present
       notify: restart apache
       
-# ?copy /etc/apache2/mods-available/ssl.conf and ssl.load to#
-# /etc/apache2/mods-enabled
-
 #    - name: Copy domain certificate file
 #      copy:
 #        src: "./{{ ssl_filename_heading }}.crt"

@@ -55,11 +55,11 @@
     # - import_tasks: swap-file.yaml
 
 
-    - name: Upgrade all packages
-      apt:
-        force_apt_get: yes
-        name: '*'
-        state: latest
+    #- name: Upgrade all packages
+    #  apt:
+    #    force_apt_get: yes
+    #    name: '*'
+    #    state: latest
 
     - name: Set the hostname
       command: hostnamectl set-hostname {{ website_domain_name }}
@@ -83,7 +83,8 @@
           - postfix
           - ufw
           - man
-        state: latest
+        state: present
+        cache_valid_time: 3600
 
     - name: Add an email alias to forward root's email to
       lineinfile:
@@ -188,7 +189,7 @@
 
     # Install PHP and extensions
     - import_tasks: php.yaml
-    
+
     # Install MariaDB
     - import_tasks: mariadb.yaml
 

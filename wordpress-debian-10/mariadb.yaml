@@ -10,7 +10,7 @@
         - python3-pymysql
         - mariadb-client
         - mycli
-       state: latest
+       state: present
 
     - name: Enable and start the MariaDB service
       service:

@@ -18,6 +18,6 @@
           - php-curl
           - php-imagick
           - php-zip
-        state: latest
+        state: present
 
 
