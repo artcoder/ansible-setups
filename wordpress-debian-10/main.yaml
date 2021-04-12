@@ -2,8 +2,7 @@
 # To install Wordpress on a low-RAM Debian 10 cloud server
 # from a Debian server running Ansible 2.7
 #
-# This assumes SSH key login, 
-#   so set up SSH login to the remote server before running this playbook.
+# Set up SSH key login to the remote server before running this playbook.
 #
 # Reads passwords and SSL files from a vault, so make the vault with:
 #   ansible-vault create secret.yml
@@ -245,8 +244,8 @@
       args:
         creates: /var/www/{{ website_domain_name }}/html/wp-settings.php
 
-    # change the directory owner and permissions for the Wordpress directories
-    - name: Give "www-data" permissions to the wordpress folder
+    # change the directory owner, group, and permissions for the Wordpress directories
+    - name: Give "www-data" permissions to the WordPress folders
       file:
         path: /var/www/{{ website_domain_name }}/html
         owner: www-data
@@ -255,14 +254,6 @@
         recurse: yes
         state: directory
     
-     # change the file owner and permissions for the Wordpress files
-    - name: Give "www-data" permissions to the wordpress folder
-      file:
-        path: /var/www/{{ website_domain_name }}/html
-        owner: www-data
-        group: www-data
-        mode: 0640
-        recurse: yes
         state: file
 
 
