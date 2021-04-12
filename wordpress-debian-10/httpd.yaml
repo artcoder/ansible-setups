@@ -13,10 +13,6 @@
         path: /var/www/{{ website_domain_name }}/html
         state: directory
 
-    - name: Enable Apache rewrite module
-      apache2_module: name=rewrite state=present
-      notify: restart apache
-      
     - name: Copy domain certificate file
       copy:
         src: "./{{ ssl_filename_heading }}.crt"
@@ -44,6 +40,10 @@
         owner: root
         mode: u+rw,g=,o=
 
+
+    - name: Enable Apache rewrite module
+      apache2_module: name=rewrite state=present
+      notify: restart apache
 
     - name: Enable Apache SSL module
       apache2_module: name=ssl state=present
