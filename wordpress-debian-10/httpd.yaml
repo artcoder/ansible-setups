@@ -17,36 +17,37 @@
       apache2_module: name=rewrite state=present
       notify: restart apache
       
+    - name: Copy domain certificate file
+      copy:
+        src: "./{{ ssl_filename_heading }}.crt"
+        dest: "/etc/ssl/certs/"
+        backup: yes
+        group: root
+        owner: root
+        mode: u+rw,g=,o=
+
+    - name: Copy certificate authority bundle file
+      copy:
+        src: "./{{ ssl_filename_heading }}.ca-bundle"
+        dest: "/etc/ssl/certs/"
+        backup: yes
+        group: root
+        owner: root
+        mode: u+rw,g=,o=
+        
+    - name: Copy private key file
+      copy:
+        src: "./{{ ssl_filename_heading }}.key"
+        dest: "/etc/ssl/private/"
+        backup: yes
+        group: root
+        owner: root
+        mode: u+rw,g=,o=
+
+
     - name: Enable Apache SSL module
       apache2_module: name=ssl state=present
       notify: restart apache
-      
-#    - name: Copy domain certificate file
-#      copy:
-#        src: "./{{ ssl_filename_heading }}.crt"
-#        dest: "/etc/ssl/certs/"
-#        backup: yes
-#        group: root
-#        owner: root
-#        mode: u+rw,g=,o=
-
-#    - name: Copy certificate authority bundle file
-#      copy:
-#        src: "./{{ ssl_filename_heading }}.ca-bundle"
-#        dest: "/etc/ssl/certs/"
-#        backup: yes
-#        group: root
-#        owner: root
-#        mode: u+rw,g=,o=
-        
-#    - name: Copy private key file
-#      copy:
-#        src: "./{{ ssl_filename_heading }}.key"
-#        dest: "/etc/ssl/private/"
-#        backup: yes
-#        group: root
-#        owner: root
-#        mode: u+rw,g=,o=
 
 # edit /etc/httpd/conf/httpd.conf to add
 # 
