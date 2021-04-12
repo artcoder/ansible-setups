@@ -218,8 +218,13 @@
     # mysql> QUIT
     
     # Ansible 2.7.7 on Debian 10 has a bug that prevents the below from working.
-    # It's fixed in Ansible 2.9.17 from an Ubuntu PPA
-    # https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html#installing-ansible-on-debian
+    # It's fixed in Debian Backports.
+    # Open /etc/apt/sources.list
+    # Add this to the end:
+    # deb http://deb.debian.org/debian buster-backports main
+    # apt update
+    # apt install ansible/buster-backports
+    #
     - name: Create user and set password for Wordpress to login to database with
       mysql_user:
         name: wordpress
