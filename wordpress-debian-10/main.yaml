@@ -254,8 +254,6 @@
         recurse: yes
         state: directory
     
-        state: file
-
 
     #SELinux is disabled by default on Debian https://wiki.debian.org/SELinux
     
