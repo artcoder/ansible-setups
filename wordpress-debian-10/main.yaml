@@ -51,7 +51,7 @@
   tasks:
         
     # Add a swap file so the database can run on a low RAM machine.
-    # - import_tasks: swap-file.yaml
+    - import_tasks: swap-file.yaml
 
 
     #- name: Upgrade all packages
