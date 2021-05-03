@@ -1,4 +1,13 @@
 <IfModule mod_ssl.c>
+
+	# Redirect HTTP to HTTPS
+	<VirtualHost *:80> 
+		ServerName {{ website_domain_name }}
+		ServerAlias www.{{ website_domain_name }}
+
+		Redirect permanent / https://{{ website_domain_name }}/
+	</VirtualHost>
+
 	<VirtualHost _default_:443>
 	
 		ServerAdmin {{ email_to }}
