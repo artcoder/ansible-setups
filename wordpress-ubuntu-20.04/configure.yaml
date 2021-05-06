@@ -1,0 +1,14 @@
+---
+
+ssl_filename_heading: 'example_com'
+website_domain_name: 'example.com'
+email_to: 'user@example.com'
+
+swap_file_path: '/swapfile'
+ansible_python_interpreter: '/usr/bin/python3'
+
+# Store the database password in the file secret.yml in this format:
+# 
+# wordpress_database_user_password: password-goes-here
+
+...

@@ -1,0 +1,23 @@
+---
+# Install MariaDB
+
+    - name: Install MariaDB / MySQL database packages
+      apt:
+       name:
+        - mariadb-server
+        - python3-mysqldb
+        
+        - python3-pymysql
+        - mariadb-client
+        - mycli
+       state: present
+
+    - name: Enable and start the MariaDB service
+      service:
+       name: mariadb
+       enabled: yes
+       state: started
+
+# mysql_secure_installation
+
+...
