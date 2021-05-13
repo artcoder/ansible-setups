@@ -49,14 +49,6 @@
       apache2_module: name=ssl state=present
       notify: restart apache
 
-# edit /etc/httpd/conf/httpd.conf to add
-# 
-#<VirtualHost *:80>
-#   ServerName {{ website_domain_name }}:80
-#   Redirect permanent / https://{{ website_domain_name }}/
-#</VirtualHost>
-
-
     - name: Enable and start the httpd service
       service:
        name: apache2
