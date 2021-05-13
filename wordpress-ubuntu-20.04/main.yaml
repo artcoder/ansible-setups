@@ -135,21 +135,20 @@
         enabled: yes
         state: started
 
-# Edit /etc/apt/apt.conf.d/50unattended-upgrades so the "Unattended-Upgrade::Allowed-Origins" section has
-#	"${distro_id}:${distro_codename}-updates";
-#uncommented
-
-# Not Working Yet
-
-# apt-config -o Unattended-Upgrade::Allowed-Origins::="\${distro_id}:\${distro_codename}-updates" dump
-#    - name: Enable unattended upgrades of regular (non-security) package updates
-#      lineinfile:
-#        path: /etc/apt/apt.conf.d/50unattended-upgrades
-#        regexp: '^.?root: .*$'
-#        line: '${distro_id}:${distro_codename}-updates'
-#        backup: no
-
-
+# Edit
+#   /etc/apt/apt.conf.d/50unattended-upgrades
+# so the
+#   "Unattended-Upgrade::Allowed-Origins"
+# section has the following uncommented:
+#   "${distro_id}:${distro_codename}-updates";
+# It's not a robust check.
+    - name: Enable unattended upgrades of regular (non-security) packages
+      lineinfile:
+        path: /etc/apt/apt.conf.d/50unattended-upgrades
+        #path: 50unattended-upgrades
+        regexp: '\"\$\{distro_id\}\:\$\{distro_codename\}-updates\";' 
+        line: "\t\"${distro_id}:${distro_codename}-updates\";"
+        backup: no
 
     - name: Add a cron job to reboot daily if needed for patches
       copy:
